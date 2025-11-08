@@ -1,0 +1,71 @@
+# Desktop Automation config template
+# Place at ./config/config.yaml or set AUTOMATION_CONFIG env var
+
+application:
+  name: Linux Desktop Automation
+  version: 1.0.0
+  
+# GUI interaction config
+gui:
+  safe_mode: true
+  move_duration: 0.3
+  click_interval: 0.1
+  type_interval: 0.05
+  screenshot_on_action: true
+  confidence_min: 0.75
+  scroll_speed: 2
+
+# Vision / OCR config
+vision:
+  ocr_language: "eng"
+  tesseract_path: "/usr/bin/tesseract"  # override with TESSERACT_CMD env if needed
+  template_match_threshold: 0.75
+  max_search_attempts: 3
+
+# Logging
+logging:
+  level: "INFO"
+  file: "logs/automation.log"
+  retention_days: 7
+  screenshot_path: "logs/screenshots"
+  max_log_mb: 10
+  console_output: true
+
+# Paths to directories
+paths:
+  templates: "templates"
+  logs_dir: "logs"
+  tasks_dir: "tasks"
+  screenshots_dir: "logs/screenshots"
+
+# Notifications
+notifications:
+  desktop:
+    enabled: true
+    timeout_ms: 5000
+    severity: normal
+  telegram:
+    enabled: false
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
+    silent: false
+
+# System integration  
+system:
+  session_type_check: auto  # auto | wayland | x11
+  terminal_command: ""
+  shell: "/bin/bash"
+  fallback_screenshot_tool: "scrot"  # scrot | grim | xwd
+
+# Task defaults
+tasks:
+  default_timeout: 30
+  default_retries: 3
+  pause_on_error: 5  # seconds
+
+# Scheduler (optional local; default is external via systemd/cron)
+scheduler:
+  enabled: false
+  backend: "schedule"  # schedule | apscheduler
+  max_concurrent: 1
+  persistence_file: "config/scheduler.db"

@@ -1,0 +1,81 @@
+# Workflow definitions
+# You can define multi-task automation chains
+
+# Example daily tasks workflow:
+daily_cleanup:
+  description: "Runs daily file tidy-ups and backups in the evening"
+  schedule: "23:00"  # HH:MM for daily run
+  tasks:
+    - task: organize_downloads
+      args:
+        delete_older_than_days: 30
+    - task: archive_project_screenshots
+      args:
+        source_dir: "/home/user/Pictures/Screenshots"
+        destination_dir: "/backup/screenshots"
+  on_error: "notify"  # ignore | notify | abort
+
+# Example multi-step browser session
+browser_evening:
+  description: "Open Firefox, visit a set of bookmarks, and take screenshots"
+  timeout: 120 # seconds
+  tasks:
+    - task: open_browser_and_visit
+      args:
+        url: "https://news.ycombinator.com"
+        screenshot: true
+    - task: scroll_page_down
+      args:
+        scrolls: 2
+    - task: wait_seconds
+      args:
+        seconds: 3
+    - task: open_browser_and_visit
+      args:
+        url: "https://github.com"
+        screenshot: true
+  on_error: "notify"
+
+# Batch processing for downloads folder:
+batch_process:
+  description: "Organize files by type and move dated folders"
+  tasks:
+    - task: organize_downloads
+      args:
+        create_subfolders:
+          Images: ["jpg", "png", "gif", "webp"]
+          Documents: ["pdf", "doc", "docx", "txt"]
+          Archives: ["zip", "tar", "gz"]
+        move_videos: true
+        delete_junk: true
+        junk_patterns: ["*.tmp", "*.crdownload"]
+      retries: 2
+
+# Observer mode - monitors for UI patterns and runs actions
+observer_mode:
+  description: "Watch screen and suggest automations (experimental)"
+  continuous: true
+  tasks:
+    - task: monitor_window_changes
+      args:
+        log_all: false
+        whitelist: ["firefox", "terminal"]
+    - task: suggest_automation_ops
+      args:
+        threshold: 0.8
+  on_error: "continue"
+
+# System health checks
+system_check:
+  description: "Daily system audit - disk, packages, notifications"
+  tasks:
+    - task: system_audit
+      args:
+        notify_free_space: true
+        warn_disk_usage_percent: 80
+    - task: apt_update_check
+      args:
+        notify_only: true
+    - task: logrotate_logs
+      args:
+        max_age_days: 7

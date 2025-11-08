@@ -1,0 +1,1493 @@
+2025-11-07T19:49:38.225007+0530 | ERROR | core.system_utils | Command failed: which wmctrl - error: 
+2025-11-07T19:50:10.394573+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:50:10.398479+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:50:18.740527+0530 | INFO | config.config_loader | Loaded config from /home/vishnu/desktop-automation/config/config.yaml
+2025-11-07T19:50:18.751037+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T19:50:18.751311+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T19:50:18.752164+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:50:18.752567+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:50:18.752779+0530 | INFO | core.logger | {"task": "organize_downloads", "status": "started", "ts": "2025-11-07T19:50:18.752739"}
+2025-11-07T19:50:18.759655+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/ANILA_KUMARI_id_card.png /home/vishnu/Downloads/Images/ANILA_KUMARI_id_card.png"}
+2025-11-07T19:50:18.764569+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/utriw.jpg /home/vishnu/Downloads/Images/utriw.jpg"}
+2025-11-07T19:50:18.768477+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/fdh.png /home/vishnu/Downloads/Images/fdh.png"}
+2025-11-07T19:50:18.772570+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/wealthy.og_post_28_10_2025_22_16_233753482316271504602.jpg /home/vishnu/Downloads/Images/wealthy.og_post_28_10_2025_22_16_233753482316271504602.jpg"}
+2025-11-07T19:50:18.783813+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/P._Sree_Ranganath_id_card.png /home/vishnu/Downloads/Images/P._Sree_Ranganath_id_card.png"}
+2025-11-07T19:50:18.790043+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-12.png /home/vishnu/Downloads/Images/visual-historian-slide-12.png"}
+2025-11-07T19:50:18.794074+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-18.png /home/vishnu/Downloads/Images/visual-historian-slide-18.png"}
+2025-11-07T19:50:18.799705+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-9.png /home/vishnu/Downloads/Images/visual-historian-slide-9.png"}
+2025-11-07T19:50:18.805116+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-4.png /home/vishnu/Downloads/Images/visual-historian-slide-4.png"}
+2025-11-07T19:50:18.822863+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/1.png /home/vishnu/Downloads/Images/1.png"}
+2025-11-07T19:50:18.830938+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/3.png /home/vishnu/Downloads/Images/3.png"}
+2025-11-07T19:50:18.835526+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/ool.jpg /home/vishnu/Downloads/Images/ool.jpg"}
+2025-11-07T19:50:18.843651+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-8.png /home/vishnu/Downloads/Images/visual-historian-slide-8.png"}
+2025-11-07T19:50:18.847536+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-5.png /home/vishnu/Downloads/Images/visual-historian-slide-5.png"}
+2025-11-07T19:50:18.851831+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-2.png /home/vishnu/Downloads/Images/visual-historian-2.png"}
+2025-11-07T19:50:18.855862+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-19.png /home/vishnu/Downloads/Images/visual-historian-slide-19.png"}
+2025-11-07T19:50:18.860056+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/thumbnail.png /home/vishnu/Downloads/Images/thumbnail.png"}
+2025-11-07T19:50:18.864027+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/instagram-design-9x16-1757874601475.png /home/vishnu/Downloads/Images/instagram-design-9x16-1757874601475.png"}
+2025-11-07T19:50:18.873623+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/kdfk.jpg /home/vishnu/Downloads/Images/kdfk.jpg"}
+2025-11-07T19:50:18.881372+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/2.png /home/vishnu/Downloads/Images/2.png"}
+2025-11-07T19:50:18.896166+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-6.png /home/vishnu/Downloads/Images/visual-historian-slide-6.png"}
+2025-11-07T19:50:18.905282+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/screencapture-localhost-3001-2025-09-30-12_31_22.png /home/vishnu/Downloads/Images/screencapture-localhost-3001-2025-09-30-12_31_22.png"}
+2025-11-07T19:50:18.911521+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-1.png /home/vishnu/Downloads/Images/visual-historian-1.png"}
+2025-11-07T19:50:18.916306+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/6.png /home/vishnu/Downloads/Images/6.png"}
+2025-11-07T19:50:18.923123+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/social-media-post-1757935507557.png /home/vishnu/Downloads/Images/social-media-post-1757935507557.png"}
+2025-11-07T19:50:18.927317+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/IOT_Lab.pdf /home/vishnu/Downloads/Documents/IOT_Lab.pdf"}
+2025-11-07T19:50:18.931119+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/PRV.pdf /home/vishnu/Downloads/Documents/PRV.pdf"}
+2025-11-07T19:50:18.936481+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/5.png /home/vishnu/Downloads/Images/5.png"}
+2025-11-07T19:50:18.942599+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-1.png /home/vishnu/Downloads/Images/visual-historian-slide-1.png"}
+2025-11-07T19:50:18.948251+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/cover-1758017246979.png /home/vishnu/Downloads/Images/cover-1758017246979.png"}
+2025-11-07T19:50:18.953587+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-2.png /home/vishnu/Downloads/Images/visual-historian-slide-2.png"}
+2025-11-07T19:50:18.957781+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/wealthy.og_post_13_10_2025_18_35_413742499597299377816.jpg /home/vishnu/Downloads/Images/wealthy.og_post_13_10_2025_18_35_413742499597299377816.jpg"}
+2025-11-07T19:50:18.964573+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/wealthy.og_post_30_10_2025_23_23_573754965867919769068.jpg /home/vishnu/Downloads/Images/wealthy.og_post_30_10_2025_23_23_573754965867919769068.jpg"}
+2025-11-07T19:50:18.970038+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/id.jpg /home/vishnu/Downloads/Images/id.jpg"}
+2025-11-07T19:50:18.986047+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/4.png /home/vishnu/Downloads/Images/4.png"}
+2025-11-07T19:50:18.990978+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-11.png /home/vishnu/Downloads/Images/visual-historian-slide-11.png"}
+2025-11-07T19:50:18.997291+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/2.1,2.2,2.3-1.pdf /home/vishnu/Downloads/Documents/2.1,2.2,2.3-1.pdf"}
+2025-11-07T19:50:19.001672+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/story-1757846453174.png /home/vishnu/Downloads/Images/story-1757846453174.png"}
+2025-11-07T19:50:19.005322+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/2.1,2.2,2.3.pdf /home/vishnu/Downloads/Documents/2.1,2.2,2.3.pdf"}
+2025-11-07T19:50:19.009653+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/kfdk.jpg /home/vishnu/Downloads/Images/kfdk.jpg"}
+2025-11-07T19:50:19.014263+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/Video.txt /home/vishnu/Downloads/Documents/Video.txt"}
+2025-11-07T19:50:19.018878+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/frame-133.png /home/vishnu/Downloads/Images/frame-133.png"}
+2025-11-07T19:50:19.024909+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/image.png /home/vishnu/Downloads/Images/image.png"}
+2025-11-07T19:50:19.032541+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/visual-historian-slide-3.png /home/vishnu/Downloads/Images/visual-historian-slide-3.png"}
+2025-11-07T19:50:19.069460+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T19:50:19.069874+0530 | INFO | core.logger | {"task": "organize_downloads", "status": "success", "ts": "2025-11-07T19:50:19.069828"}
+2025-11-07T19:50:39.621759+0530 | INFO | config.config_loader | Loaded config from /home/vishnu/desktop-automation/config/config.yaml
+2025-11-07T19:50:39.631809+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T19:50:39.632094+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T19:50:39.632874+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:50:39.634333+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:50:39.638960+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T19:50:39.650187+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T19:50:39.650487+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T19:50:39.650986+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T19:50:39.650945", "description": "Navigate to https://example.com"}
+2025-11-07T19:50:39.651637+0530 | ERROR | core.gui_controller | Failed to focus window Terminal: [Errno 2] No such file or directory: 'wmctrl'
+2025-11-07T19:50:40.153526+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "firefox &"}
+2025-11-07T19:50:42.654905+0530 | ERROR | core.gui_controller | Failed to focus window Firefox: [Errno 2] No such file or directory: 'wmctrl'
+2025-11-07T19:50:42.655323+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "error", "ts": "2025-11-07T19:50:42.655274", "error": "Firefox window not found/accessible", "error_type": "RuntimeError"}
+2025-11-07T19:51:33.361074+0530 | INFO | config.config_loader | Loaded config from /home/vishnu/desktop-automation/config/config.yaml
+2025-11-07T19:51:33.373682+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T19:51:33.373999+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T19:51:33.374948+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:51:33.375428+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:51:33.375668+0530 | INFO | core.logger | {"task": "organize_downloads", "status": "started", "ts": "2025-11-07T19:51:33.375624"}
+2025-11-07T19:51:33.384566+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "mv /home/vishnu/Downloads/video.mp4 /home/vishnu/Downloads/Videos/video.mp4"}
+2025-11-07T19:51:33.415210+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T19:51:33.415713+0530 | INFO | core.logger | {"task": "organize_downloads", "status": "success", "ts": "2025-11-07T19:51:33.415656"}
+2025-11-07T19:51:45.206809+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:51:45.207834+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:57:01.255583+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T19:57:01.256789+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:57:01.258776+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T19:57:01.260894+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:57:01.261818+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T19:57:01.263416+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T19:57:01.268011+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T19:57:01.282131+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T19:57:01.282424+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T19:57:03.703934+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T19:57:03.704367+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T19:57:03.704325", "description": "Navigate to https://www.google.com"}
+2025-11-07T19:57:03.704863+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T19:57:09.019450+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T19:57:09.019326"}
+2025-11-07T19:57:09.054530+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_19-57-09.png
+2025-11-07T19:57:09.074921+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T19:57:15.728676+0530 | INFO | core.intent_parser | Parsed intent: open_app from 'open canva design'
+2025-11-07T19:57:15.730117+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T19:57:15.730691+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T19:57:15.731647+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T19:57:15.732299+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T19:57:15.733050+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T19:57:16.882153+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T19:57:18.902689+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T19:57:18.903004+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T19:57:18.903336+0530 | INFO | core.logger | {"task": "template_action", "status": "started", "ts": "2025-11-07T19:57:18.903298"}
+2025-11-07T19:57:18.903572+0530 | INFO | template_action | Opening canva at https://www.canva.com/design-dashboard/templates/
+2025-11-07T19:57:48.586925+0530 | WARNING | template_action | Search selector not found: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("[data-testid='SearchInput'], input[placeholder*='search' i], input[placeholder*='Search' i]") to be visible
+
+2025-11-07T19:58:18.591087+0530 | WARNING | template_action | Template click failed: Page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("div[role='link'], a[data-testid*='template']")
+
+2025-11-07T19:58:26.594452+0530 | WARNING | template_action | Export step failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("[aria-label*='share'], button[data-testid='share'], button[aria-label*='Download' i]") to be visible
+
+2025-11-07T19:58:56.610380+0530 | INFO | core.logger | {"task": "template_action", "status": "error", "ts": "2025-11-07T19:58:56.610284", "error": "Page.screenshot: Timeout 30000ms exceeded.\nCall log:\n  - taking page screenshot\n  - waiting for fonts to load...\n  - fonts loaded\n", "error_type": "TimeoutError"}
+2025-11-07T21:00:31.734292+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open firefox browser'
+2025-11-07T21:00:31.734946+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:00:31.735289+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to canva.com'
+2025-11-07T21:00:31.735463+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:00:31.735638+0530 | INFO | core.intent_parser | Parsed intent: create_template from 'open make a template of 4:5'
+2025-11-07T21:00:31.736981+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:00:31.738137+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:00:31.739179+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:00:31.740003+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:00:31.741054+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:00:31.742418+0530 | ERROR | tasks | Failed to load task canva_template: unexpected character after line continuation character (canva_template.py, line 57)
+2025-11-07T21:00:31.748086+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:00:31.771738+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:00:31.772198+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:00:34.028214+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:00:34.029515+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:00:34.029461", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:00:34.040627+0530 | ERROR | core.gui_controller | Failed to focus window Terminal: Command '['wmctrl', '-a', 'Terminal']' returned non-zero exit status 1.
+2025-11-07T21:00:34.542600+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "firefox &"}
+2025-11-07T21:00:37.061640+0530 | ERROR | core.gui_controller | Failed to focus window Firefox: Command '['wmctrl', '-a', 'Firefox']' returned non-zero exit status 1.
+2025-11-07T21:00:37.062144+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "error", "ts": "2025-11-07T21:00:37.062069", "error": "Firefox window not found/accessible", "error_type": "RuntimeError"}
+2025-11-07T21:00:37.076484+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-00-37.png
+2025-11-07T21:00:37.239924+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:01:08.340570+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open firefox browser'
+2025-11-07T21:01:08.341213+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:01:08.341627+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to canva.com'
+2025-11-07T21:01:08.341994+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:01:08.342341+0530 | INFO | core.intent_parser | Parsed intent: create_template from 'open make a template of 4:5'
+2025-11-07T21:01:08.344386+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:01:08.346555+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:01:08.348114+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:01:08.349422+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:01:08.350284+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:01:08.353292+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:01:08.360000+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:01:08.387118+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:01:08.387726+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:01:09.877040+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:01:09.877537+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:01:09.877478", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:01:09.883540+0530 | ERROR | core.gui_controller | Failed to focus window Terminal: Command '['wmctrl', '-a', 'Terminal']' returned non-zero exit status 1.
+2025-11-07T21:01:10.386047+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "firefox &"}
+2025-11-07T21:01:12.892909+0530 | ERROR | core.gui_controller | Failed to focus window Firefox: Command '['wmctrl', '-a', 'Firefox']' returned non-zero exit status 1.
+2025-11-07T21:01:12.893451+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "error", "ts": "2025-11-07T21:01:12.893390", "error": "Firefox window not found/accessible", "error_type": "RuntimeError"}
+2025-11-07T21:01:12.898487+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-01-12.png
+2025-11-07T21:01:12.930369+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:03:01.187227+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T21:03:01.188191+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:03:01.189557+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to canva.com'
+2025-11-07T21:03:01.190075+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:03:01.190575+0530 | INFO | core.intent_parser | Parsed intent: create_template from 'make a template of 4:5'
+2025-11-07T21:03:01.193392+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:03:01.194987+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:03:01.196160+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:03:01.197055+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:03:01.197810+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:03:01.198522+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:03:01.204321+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:03:01.233030+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:03:01.233679+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:03:02.931046+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:03:02.931470+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:03:02.931427", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:03:02.931959+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:03:13.325655+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:03:13.325543"}
+2025-11-07T21:03:13.335664+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-03-13.png
+2025-11-07T21:03:13.367425+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:03:15.081790+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:03:17.082857+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:03:17.082767"}
+2025-11-07T21:03:17.083355+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:03:17.085631+0530 | INFO | core.logger | {"task": "canva_template", "status": "error", "ts": "2025-11-07T21:03:17.085544", "error": "cannot switch to a different thread (which happens to have exited)", "error_type": "error"}
+2025-11-07T21:03:18.580522+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:03:20.583398+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:03:20.583330"}
+2025-11-07T21:03:20.583786+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:03:20.584969+0530 | INFO | core.logger | {"task": "canva_template", "status": "error", "ts": "2025-11-07T21:03:20.584915", "error": "cannot switch to a different thread (which happens to have exited)", "error_type": "error"}
+2025-11-07T21:03:45.071067+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T21:03:45.072249+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:03:45.073216+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:03:45.074346+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:03:45.075411+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:03:45.076237+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:03:45.077062+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:03:45.083365+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:03:45.102680+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:03:45.103330+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:03:46.691149+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:03:46.691647+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:03:46.691595", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:03:46.692075+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:03:54.138894+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:03:54.138824"}
+2025-11-07T21:03:54.167690+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-03-54.png
+2025-11-07T21:03:54.195937+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:05:28.330558+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:07:04.248315+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T21:07:04.248905+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:07:04.249286+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to canva.com'
+2025-11-07T21:07:04.249568+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:07:04.249851+0530 | INFO | core.intent_parser | Parsed intent: create_template from 'make a template of 4:5'
+2025-11-07T21:07:04.252190+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:07:04.253243+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:07:04.257034+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:07:04.257996+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:07:04.258910+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:07:04.261507+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:07:04.267373+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:07:04.267930+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:07:05.749711+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:07:05.750007+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:07:05.765867+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:07:05.766236+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:07:05.766430+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:07:05.766397", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:07:05.766584+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:07:13.286139+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:07:13.285979"}
+2025-11-07T21:07:13.325668+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-07-13.png
+2025-11-07T21:07:13.387760+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:07:13.415558+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:07:13.416134+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:07:13.416596+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:07:13.416535"}
+2025-11-07T21:07:13.417495+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:08:16.202056+0530 | WARNING | canva_template | Could not complete search, continuing anyway: Page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("a[href*=\"/templates/\"], [class*=\"template\"]")
+    - locator resolved to 309 elements. Proceeding with the first one: <a href="https://www.canva.com/templates/">…</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    57 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+2025-11-07T21:08:24.019040+0530 | WARNING | canva_template | Could not filter by aspect ratio 4:5: Page.wait_for_selector: Timeout 3000ms exceeded.
+Call log:
+  - waiting for locator("[aria-label*=\"4:5\"], [data-testid*=\"4:5\"], [class*=\"4-5\"]") to be visible
+
+2025-11-07T21:08:24.299362+0530 | INFO | core.logger | {"task": "canva_template", "status": "success", "ts": "2025-11-07T21:08:24.299298"}
+2025-11-07T21:08:24.327815+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:08:24.328063+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:08:24.328245+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:08:24.328217"}
+2025-11-07T21:08:24.328378+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:09:07.197499+0530 | WARNING | canva_template | Could not complete search, continuing anyway: Page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("a[href*=\"/templates/\"], [class*=\"template\"]")
+    - locator resolved to 309 elements. Proceeding with the first one: <a href="https://www.canva.com/templates/">…</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    52 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+2025-11-07T21:09:13.201231+0530 | WARNING | canva_template | Could not filter by aspect ratio 4:5: Page.wait_for_selector: Timeout 3000ms exceeded.
+Call log:
+  - waiting for locator("[aria-label*=\"4:5\"], [data-testid*=\"4:5\"], [class*=\"4-5\"]") to be visible
+
+2025-11-07T21:09:15.508147+0530 | INFO | core.logger | {"task": "canva_template", "status": "success", "ts": "2025-11-07T21:09:15.508022"}
+2025-11-07T21:09:15.537184+0530 | INFO | core.browser_manager | Closing shared browser
+2025-11-07T21:09:32.241115+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T21:09:32.241571+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:09:32.241864+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to github.com'
+2025-11-07T21:09:32.243119+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:09:32.243632+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:09:32.244124+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:09:32.244560+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:09:32.245045+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:09:32.245575+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:09:32.250972+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:09:32.251565+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:09:33.799330+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:09:33.800177+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:09:33.831129+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:09:33.833115+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:09:33.834366+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:09:33.834224", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:09:33.836920+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:09:42.079458+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:09:42.079348"}
+2025-11-07T21:09:42.085194+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-09-42.png
+2025-11-07T21:09:42.114222+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:09:42.125772+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:09:42.126074+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:09:42.126272+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:09:42.126242"}
+2025-11-07T21:09:42.126419+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:10:35.756754+0530 | WARNING | canva_template | Could not complete search, continuing anyway: Page.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("a[href*=\"/templates/\"], [class*=\"template\"]")
+    - locator resolved to 309 elements. Proceeding with the first one: <a href="https://www.canva.com/templates/">…</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    54 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+2025-11-07T21:10:43.182246+0530 | WARNING | canva_template | Could not filter by aspect ratio 4:5: Page.wait_for_selector: Target page, context or browser has been closed
+Call log:
+  - waiting for locator("[aria-label*=\"4:5\"], [data-testid*=\"4:5\"], [class*=\"4-5\"]") to be visible
+
+2025-11-07T21:10:43.220227+0530 | INFO | core.logger | {"task": "canva_template", "status": "error", "ts": "2025-11-07T21:10:43.219995", "error": "Page.screenshot: Target page, context or browser has been closed", "error_type": "TargetClosedError"}
+2025-11-07T21:10:43.252695+0530 | INFO | core.browser_manager | Closing shared browser
+2025-11-07T21:26:07.082882+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T21:26:07.083272+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:26:07.083501+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to canva.com'
+2025-11-07T21:26:07.083696+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:26:07.083903+0530 | INFO | core.intent_parser | Parsed intent: create_template from 'make a template of 4:5'
+2025-11-07T21:26:07.085187+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:26:07.086073+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:26:07.086918+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:26:07.087391+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:26:07.087935+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:26:07.088410+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:26:07.091909+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:26:07.092558+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:26:10.099466+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:26:10.099873+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:26:10.118029+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:26:10.118896+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:26:10.119258+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:26:10.119204", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:26:10.120283+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:26:17.828902+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:26:17.828760"}
+2025-11-07T21:26:17.837004+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-26-17.png
+2025-11-07T21:26:17.868451+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:26:17.879652+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:26:17.879965+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:26:17.880224+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:26:17.880193"}
+2025-11-07T21:26:17.880363+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:27:01.804839+0530 | WARNING | canva_template | Could not complete search, continuing anyway: Page.click: Target page, context or browser has been closed
+Call log:
+  - waiting for locator("a[href*=\"/templates/\"], [class*=\"template\"]")
+    - locator resolved to 309 elements. Proceeding with the first one: <a href="https://www.canva.com/templates/">…</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    51 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+2025-11-07T21:27:01.808245+0530 | INFO | core.logger | {"task": "canva_template", "status": "error", "ts": "2025-11-07T21:27:01.808175", "error": "Page.goto: Target page, context or browser has been closed", "error_type": "TargetClosedError"}
+2025-11-07T21:27:01.905042+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:27:01.905316+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:27:01.905655+0530 | INFO | core.logger | {"task": "canva_template", "status": "started", "ts": "2025-11-07T21:27:01.905623"}
+2025-11-07T21:27:01.905908+0530 | INFO | canva_template | Navigating to Canva templates
+2025-11-07T21:27:01.909446+0530 | INFO | core.logger | {"task": "canva_template", "status": "error", "ts": "2025-11-07T21:27:01.909386", "error": "Page.goto: Target page, context or browser has been closed", "error_type": "TargetClosedError"}
+2025-11-07T21:27:01.929863+0530 | INFO | core.browser_manager | Closing shared browser
+2025-11-07T21:34:13.458811+0530 | INFO | core.intent_parser | Parsed intent: open_browser from 'open brave browser'
+2025-11-07T21:34:13.459395+0530 | WARNING | core.intent_parser | No intent matched for part: 'and'
+2025-11-07T21:34:13.459678+0530 | INFO | core.intent_parser | Parsed intent: navigate_site from 'go to github.com'
+2025-11-07T21:34:13.461389+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:34:13.462658+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:34:13.465089+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:34:13.466457+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:34:13.468843+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:34:13.469851+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:34:13.470676+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:34:13.473029+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:34:13.475705+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:34:13.476689+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:34:13.496216+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:34:13.496868+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:34:15.120717+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:34:15.121473+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:34:15.169986+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:34:15.174385+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:34:15.177916+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:34:15.177677", "description": "Navigate to https://www.google.com"}
+2025-11-07T21:34:15.178494+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:34:21.377892+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:34:21.377782"}
+2025-11-07T21:34:21.385598+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-34-21.png
+2025-11-07T21:34:21.413470+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:34:21.419659+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:34:21.436157+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:34:21.436572+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:34:21.436926+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:34:21.436882", "description": "Navigate to https://github.com"}
+2025-11-07T21:34:21.437211+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:34:32.013314+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "success", "ts": "2025-11-07T21:34:32.013159"}
+2025-11-07T21:34:32.040427+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-34-32.png
+2025-11-07T21:34:32.078923+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:34:32.080547+0530 | INFO | core.browser_manager | Closing shared browser
+2025-11-07T21:35:09.114149+0530 | INFO | core.intent_parser | Parsed intent: wait from 'wait 3 seconds'
+2025-11-07T21:35:09.114852+0530 | INFO | core.intent_parser | Parsed intent: screenshot from 'then take screenshot'
+2025-11-07T21:35:09.117040+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:35:09.118684+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:35:09.119856+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:35:09.120775+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:35:09.121527+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:35:09.122202+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:35:09.122887+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:35:09.123726+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:35:09.124504+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:35:09.125202+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:35:09.125915+0530 | INFO | core.logger | {"task": "wait_seconds", "status": "started", "ts": "2025-11-07T21:35:09.125649"}
+2025-11-07T21:35:09.126492+0530 | INFO | wait_seconds | Waiting 2 second(s)
+2025-11-07T21:35:11.127088+0530 | INFO | core.logger | {"task": "wait_seconds", "status": "success", "ts": "2025-11-07T21:35:11.126965"}
+2025-11-07T21:35:11.147192+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:35:11.147694+0530 | INFO | core.logger | {"task": "system_screenshot", "status": "started", "ts": "2025-11-07T21:35:11.147636"}
+2025-11-07T21:35:11.151539+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/desktop_screenshot_2025-11-07_21-35-11_2025-11-07_21-35-11.png
+2025-11-07T21:35:11.151828+0530 | INFO | system_screenshot | Screenshot saved to: /home/vishnu/desktop-automation/logs/screenshots/desktop_screenshot_2025-11-07_21-35-11_2025-11-07_21-35-11.png
+2025-11-07T21:35:11.179202+0530 | INFO | core.logger | {"task": "system_screenshot", "status": "success", "ts": "2025-11-07T21:35:11.179119"}
+2025-11-07T21:35:22.019315+0530 | INFO | core.intent_parser | Parsed intent: screenshot from 'take screenshot'
+2025-11-07T21:35:22.019862+0530 | INFO | core.intent_parser | Parsed intent: wait from 'then wait 3 seconds'
+2025-11-07T21:35:22.020935+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:35:22.022515+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:35:22.023261+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:35:22.023974+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:35:22.024818+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:35:22.025460+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:35:22.026237+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:35:22.026783+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:35:22.027622+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:35:22.028459+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:35:22.051278+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:35:22.052010+0530 | INFO | core.logger | {"task": "system_screenshot", "status": "started", "ts": "2025-11-07T21:35:22.051943"}
+2025-11-07T21:35:22.067345+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/desktop_screenshot_2025-11-07_21-35-22_2025-11-07_21-35-22.png
+2025-11-07T21:35:22.067741+0530 | INFO | system_screenshot | Screenshot saved to: /home/vishnu/desktop-automation/logs/screenshots/desktop_screenshot_2025-11-07_21-35-22_2025-11-07_21-35-22.png
+2025-11-07T21:35:22.134022+0530 | INFO | core.logger | {"task": "system_screenshot", "status": "success", "ts": "2025-11-07T21:35:22.133949"}
+2025-11-07T21:35:22.134928+0530 | INFO | core.logger | {"task": "wait_seconds", "status": "started", "ts": "2025-11-07T21:35:22.134881"}
+2025-11-07T21:35:22.135217+0530 | INFO | wait_seconds | Waiting 2 second(s)
+2025-11-07T21:35:24.135612+0530 | INFO | core.logger | {"task": "wait_seconds", "status": "success", "ts": "2025-11-07T21:35:24.135507"}
+2025-11-07T21:37:25.888195+0530 | INFO | core.intent_parser | Parsed intent: install_app from 'install app Mumble'
+2025-11-07T21:37:25.890458+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:37:25.891862+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:37:25.895522+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:37:25.896459+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:37:25.897270+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:37:25.897959+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:37:25.898621+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:37:25.899403+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:37:25.900221+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:37:25.900943+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:37:25.901660+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:37:25.901972+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:37:27.525292+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:37:27.525651+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:37:27.548581+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:37:27.549090+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:37:27.549710+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:37:27.549654"}
+2025-11-07T21:37:27.549935+0530 | INFO | install_app | Opening Ubuntu Software Center
+2025-11-07T21:37:27.551689+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-software &"}
+2025-11-07T21:37:30.560730+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:37:30.566281+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:37:30.566650+0530 | WARNING | install_app | Could not focus software center window, trying alternatives
+2025-11-07T21:37:32.584307+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:37:34.096154+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T21:37:35.299362+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:37:38.300064+0530 | INFO | install_app | Looking for Mumble in search results
+2025-11-07T21:37:38.309263+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_search_results_2025-11-07_21-37-38.png
+2025-11-07T21:37:39.512300+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:37:40.214165+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:37:40.915775+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:37:41.618048+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:37:44.618660+0530 | INFO | install_app | Looking for Install button
+2025-11-07T21:37:46.819914+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:37:47.521309+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:37:48.222772+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:37:48.924939+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:37:49.626516+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:37:50.328136+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:37:54.328671+0530 | INFO | install_app | Entering password for authentication
+2025-11-07T21:37:54.788000+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T21:37:55.490066+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:37:56.490712+0530 | INFO | install_app | Waiting for installation to complete
+2025-11-07T21:38:06.569447+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_21-38-06.png
+2025-11-07T21:38:06.696480+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:38:06.697303+0530 | INFO | core.logger | {"task": "install_app", "status": "success", "ts": "2025-11-07T21:38:06.697241"}
+2025-11-07T21:38:06.762777+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-38-06.png
+2025-11-07T21:38:23.536370+0530 | INFO | core.intent_parser | Parsed intent: open_app from 'open file manager'
+2025-11-07T21:38:23.536903+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to Downloads'
+2025-11-07T21:38:23.537222+0530 | ERROR | core.intent_parser | Unhandled intent action: open_app
+2025-11-07T21:38:23.538606+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:38:23.539238+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:38:23.539826+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:38:23.540366+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:38:23.540915+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:38:23.541500+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:38:23.541998+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:38:23.542484+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:38:23.542892+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:38:23.543322+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:38:23.543738+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:38:23.549034+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-terminal --working-directory=\"/home/vishnu\" &"}
+2025-11-07T21:38:23.549499+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:38:24.868293+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:38:24.868718+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:38:24.885998+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:38:24.886459+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:38:24.886876+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "started", "ts": "2025-11-07T21:38:24.886830", "description": "Navigate to https://Downloads"}
+2025-11-07T21:38:24.887277+0530 | INFO | open_browser_and_visit | Navigating via Playwright <Browser type=<BrowserType name=chromium executable_path=/home/vishnu/.cache/ms-playwright/chromium-1187/chrome-linux/chrome> version=142.0.7444.60>
+2025-11-07T21:38:35.697772+0530 | INFO | core.logger | {"task": "open_browser_and_visit", "status": "error", "ts": "2025-11-07T21:38:35.697686", "error": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://downloads/\nCall log:\n  - navigating to \"https://downloads/\", waiting until \"load\"\n", "error_type": "Error"}
+2025-11-07T21:38:35.702602+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_browser_task_2025-11-07_21-38-35.png
+2025-11-07T21:38:35.753032+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:38:35.753660+0530 | INFO | core.browser_manager | Closing shared browser
+2025-11-07T21:39:06.222939+0530 | INFO | core.intent_parser | Parsed intent: open_app from 'open file manager'
+2025-11-07T21:39:06.223411+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to Downloads'
+2025-11-07T21:39:06.223694+0530 | ERROR | core.intent_parser | Unhandled intent action: open_app
+2025-11-07T21:39:06.224927+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:39:06.225612+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:39:06.226243+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:39:06.226839+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:39:06.227378+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:39:06.227760+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:39:06.228135+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:39:06.228526+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:39:06.229817+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:39:06.230259+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:39:06.230639+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:39:06.231014+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:39:06.241283+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:39:06.241611+0530 | INFO | core.logger | {"task": "folder_operations", "status": "started", "ts": "2025-11-07T21:39:06.241568"}
+2025-11-07T21:39:06.433092+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "xdg-open /home/vishnu/Downloads"}
+2025-11-07T21:39:06.477036+0530 | INFO | core.logger | {"task": "folder_operations", "status": "success", "ts": "2025-11-07T21:39:06.476967"}
+2025-11-07T21:39:19.228821+0530 | INFO | core.intent_parser | Parsed intent: open_app_specific from 'open file manager'
+2025-11-07T21:39:19.229190+0530 | INFO | core.intent_parser | Parsed intent: open_site_template from 'go to Downloads'
+2025-11-07T21:39:19.229489+0530 | ERROR | core.intent_parser | Unhandled intent action: open_app_specific
+2025-11-07T21:39:19.230743+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:39:19.231390+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:39:19.231800+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:39:19.232167+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:39:19.232558+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:39:19.232914+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:39:19.233383+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:39:19.233811+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:39:19.234408+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:39:19.234797+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:39:19.235305+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:39:19.235689+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:39:19.244857+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:39:19.245151+0530 | INFO | core.logger | {"task": "folder_operations", "status": "started", "ts": "2025-11-07T21:39:19.245115"}
+2025-11-07T21:39:19.268733+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "xdg-open /home/vishnu/Downloads"}
+2025-11-07T21:39:19.301467+0530 | INFO | core.logger | {"task": "folder_operations", "status": "success", "ts": "2025-11-07T21:39:19.301392"}
+2025-11-07T21:39:29.745339+0530 | INFO | core.intent_parser | Parsed intent: install_app from 'install app firefox'
+2025-11-07T21:39:29.746596+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:39:29.747193+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:39:29.748141+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:39:29.748819+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:39:29.749642+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:39:29.750289+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:39:29.750911+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:39:29.751642+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:39:29.752189+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:39:29.752682+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:39:29.753356+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:39:29.754444+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:39:29.754717+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:39:31.104566+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:39:31.105053+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:39:31.120327+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:39:31.120764+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:39:31.121002+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:39:31.120962"}
+2025-11-07T21:39:31.121193+0530 | INFO | install_app | Opening Ubuntu Software Center
+2025-11-07T21:39:31.124788+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "gnome-software &"}
+2025-11-07T21:39:34.132923+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:39:34.139129+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:39:34.139554+0530 | WARNING | install_app | Could not focus software center window, trying alternatives
+2025-11-07T21:39:36.143691+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:39:37.706183+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 7}
+2025-11-07T21:39:38.908257+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:39:41.909021+0530 | INFO | install_app | Looking for firefox in search results
+2025-11-07T21:39:41.916250+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_search_results_2025-11-07_21-39-41.png
+2025-11-07T21:39:43.118168+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:39:43.820467+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:39:44.526583+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:39:45.228337+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:39:48.229000+0530 | INFO | install_app | Looking for Install button
+2025-11-07T21:39:50.433133+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:39:51.142105+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:39:51.846191+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:39:52.554324+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:39:53.258673+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:39:53.960368+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:39:57.961151+0530 | INFO | install_app | Entering password for authentication
+2025-11-07T21:39:58.417814+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T21:39:59.119557+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:40:00.120194+0530 | INFO | install_app | Waiting for installation to complete
+2025-11-07T21:40:10.125369+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_21-40-10.png
+2025-11-07T21:40:10.159662+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:40:10.160043+0530 | INFO | core.logger | {"task": "install_app", "status": "success", "ts": "2025-11-07T21:40:10.159999"}
+2025-11-07T21:40:10.189115+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-40-10.png
+2025-11-07T21:43:09.658025+0530 | INFO | core.intent_parser | Parsed intent: install_app from 'install app Mumble'
+2025-11-07T21:43:09.659021+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:43:09.660424+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:43:09.660939+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:43:09.662751+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:43:09.663342+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:43:09.663751+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:43:09.664104+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:43:09.664451+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:43:09.665311+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:43:09.666037+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:43:09.666538+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:43:09.667003+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:43:09.667465+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:43:09.667676+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:43:10.832479+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:43:10.832845+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:43:10.846986+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:43:10.847393+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:43:10.847853+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:43:10.847808"}
+2025-11-07T21:43:10.848309+0530 | INFO | install_app | Opening Ubuntu App Center
+2025-11-07T21:43:10.850343+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T21:43:13.857590+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:43:13.866827+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:43:13.867822+0530 | WARNING | install_app | Could not focus software center window, trying alternatives
+2025-11-07T21:43:15.872458+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:43:17.381212+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T21:43:18.583126+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:43:21.583777+0530 | INFO | install_app | Looking for Mumble in search results
+2025-11-07T21:43:21.591478+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_search_results_2025-11-07_21-43-21.png
+2025-11-07T21:43:22.792920+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:43:23.494704+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:43:24.196128+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:43:24.897447+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:43:27.898015+0530 | INFO | install_app | Looking for Install button
+2025-11-07T21:43:30.099805+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:43:30.801168+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:43:31.502953+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:43:32.205759+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:43:32.908174+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:43:33.610277+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:43:37.611063+0530 | INFO | install_app | Entering password for authentication
+2025-11-07T21:43:38.072449+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T21:43:38.774600+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:43:39.775336+0530 | INFO | install_app | Waiting for installation to complete
+2025-11-07T21:43:49.782474+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_21-43-49.png
+2025-11-07T21:43:49.812792+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:43:49.813612+0530 | INFO | core.logger | {"task": "install_app", "status": "success", "ts": "2025-11-07T21:43:49.813551"}
+2025-11-07T21:43:49.842493+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-43-49.png
+2025-11-07T21:44:56.405557+0530 | INFO | core.intent_parser | Parsed intent: open_app_specific from 'open file manager'
+2025-11-07T21:44:56.406755+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:44:56.407539+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:44:56.408193+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:44:56.408899+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:44:56.409512+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:44:56.410022+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:44:56.410428+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:44:56.410797+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:44:56.411253+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:44:56.411645+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:44:56.412032+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:44:56.412639+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:44:56.413192+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:44:56.426625+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:44:56.426980+0530 | INFO | core.logger | {"task": "open_system_app", "status": "started", "ts": "2025-11-07T21:44:56.426931"}
+2025-11-07T21:44:56.427223+0530 | INFO | open_system_app | Trying to open file directly
+2025-11-07T21:44:56.429141+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "file &"}
+2025-11-07T21:44:58.462634+0530 | INFO | core.logger | {"task": "open_system_app", "status": "success", "ts": "2025-11-07T21:44:58.462564"}
+2025-11-07T21:45:33.257028+0530 | INFO | core.intent_parser | Parsed intent: open_app_multiword from 'open file manager'
+2025-11-07T21:45:44.789740+0530 | INFO | core.intent_parser | Parsed intent: open_app_multiword from 'open file manager'
+2025-11-07T21:45:44.792157+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:45:44.793608+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:45:44.795282+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:45:44.796942+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:45:44.798208+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:45:44.799293+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:45:44.800140+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:45:44.800886+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:45:44.801734+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:45:44.802547+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:45:44.803343+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:45:44.804121+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:45:44.804897+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:45:44.828090+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:45:44.828748+0530 | INFO | core.logger | {"task": "folder_operations", "status": "started", "ts": "2025-11-07T21:45:44.828660"}
+2025-11-07T21:45:45.024225+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "xdg-open /home/vishnu"}
+2025-11-07T21:45:45.166776+0530 | INFO | core.logger | {"task": "folder_operations", "status": "success", "ts": "2025-11-07T21:45:45.166662"}
+2025-11-07T21:46:35.266874+0530 | INFO | core.intent_parser | Parsed intent: install_app from 'install app Mumble'
+2025-11-07T21:46:35.267981+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:46:35.268610+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:46:35.269264+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:46:35.269753+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:46:35.270173+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:46:35.270561+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:46:35.270900+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:46:35.271236+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:46:35.271935+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:46:35.272761+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:46:35.273163+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:46:35.273503+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:46:35.273862+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:46:35.274003+0530 | INFO | core.browser_manager | Initializing shared Brave browser instance
+2025-11-07T21:46:36.429673+0530 | INFO | core.browser | Browser started: chromium headless=False exec=/usr/bin/brave-browser
+2025-11-07T21:46:36.429997+0530 | INFO | core.browser_manager | Shared Brave browser ready
+2025-11-07T21:46:36.445718+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:46:36.446118+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:46:36.446355+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:46:36.446316"}
+2025-11-07T21:46:36.446540+0530 | INFO | install_app | Opening Ubuntu App Center
+2025-11-07T21:46:36.448912+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T21:46:39.468071+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:46:39.487384+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:46:39.488014+0530 | WARNING | install_app | Could not focus software center window, trying alternatives
+2025-11-07T21:46:41.491959+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:46:43.003576+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T21:46:44.206253+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:46:47.206884+0530 | INFO | install_app | Looking for Mumble in search results
+2025-11-07T21:46:47.212408+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_search_results_2025-11-07_21-46-47.png
+2025-11-07T21:46:48.414648+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:46:49.115978+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:46:49.817521+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:46:50.519157+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:46:53.519613+0530 | INFO | install_app | Looking for Install button
+2025-11-07T21:46:53.880520+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-46-53.png
+2025-11-07T21:48:52.079372+0530 | INFO | core.intent_parser | Parsed intent: open_app_multiword from 'open file manager'
+2025-11-07T21:48:52.080571+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:48:52.082666+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:48:52.083582+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:48:52.085636+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:48:52.086176+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:48:52.087678+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:48:52.088708+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:48:52.089387+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:48:52.089835+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:48:52.091069+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:48:52.092354+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:48:52.093523+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:48:52.094017+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:50:18.304069+0530 | INFO | core.intent_parser | Parsed intent: install_app from 'install app Mumble'
+2025-11-07T21:50:18.306337+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:50:18.310141+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:50:18.311331+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:50:18.312334+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:50:18.313199+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:50:18.314051+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:50:18.316530+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:50:18.317934+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:50:18.318827+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:50:18.321826+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:50:18.325559+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:50:18.328688+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:50:18.330082+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:50:18.362109+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:50:18.362624+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:50:18.363182+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:50:18.363067"}
+2025-11-07T21:50:18.363737+0530 | INFO | install_app | Opening Ubuntu App Center
+2025-11-07T21:50:18.367116+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T21:50:21.373000+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:50:21.380610+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:50:21.386064+0530 | WARNING | install_app | Could not focus software center window, trying alternatives
+2025-11-07T21:50:23.397238+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:50:24.908028+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T21:50:26.109855+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:50:29.110591+0530 | INFO | install_app | Looking for Mumble in search results
+2025-11-07T21:50:29.118404+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_search_results_2025-11-07_21-50-29.png
+2025-11-07T21:50:30.320869+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:50:31.023301+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:50:31.725382+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:50:32.427363+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:50:35.430150+0530 | INFO | install_app | Looking for Install button
+2025-11-07T21:50:37.632522+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:50:38.334655+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:50:39.036658+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:50:39.738451+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:50:40.440088+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:50:41.142522+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:50:45.143565+0530 | INFO | install_app | Entering password for authentication
+2025-11-07T21:50:45.601245+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T21:50:46.303822+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:50:47.304529+0530 | INFO | install_app | Waiting for installation to complete
+2025-11-07T21:50:52.725193+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-50-52.png
+2025-11-07T21:51:55.115036+0530 | INFO | core.intent_parser | Parsed intent: install_app from 'install app Mumble'
+2025-11-07T21:51:55.116234+0530 | INFO | tasks | Registered task: organize_downloads
+2025-11-07T21:51:55.116702+0530 | INFO | tasks | Registered task: open_system_app
+2025-11-07T21:51:55.117202+0530 | INFO | tasks | Registered task: browser_action
+2025-11-07T21:51:55.119943+0530 | INFO | tasks | Registered task: install_app
+2025-11-07T21:51:55.120809+0530 | INFO | tasks | Registered task: file_operations
+2025-11-07T21:51:55.121197+0530 | INFO | tasks | Registered task: open_browser_and_visit
+2025-11-07T21:51:55.121536+0530 | INFO | tasks | Registered task: system_screenshot
+2025-11-07T21:51:55.121849+0530 | INFO | tasks | Registered task: wait_seconds
+2025-11-07T21:51:55.122208+0530 | INFO | tasks | Registered task: template_action
+2025-11-07T21:51:55.122555+0530 | INFO | tasks | Registered task: folder_operations
+2025-11-07T21:51:55.122897+0530 | INFO | tasks | Registered task: system_hotkey
+2025-11-07T21:51:55.123239+0530 | INFO | tasks | Registered task: window_management
+2025-11-07T21:51:55.123585+0530 | INFO | tasks | Registered task: canva_template
+2025-11-07T21:51:55.137376+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:51:55.137918+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:51:55.138313+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:51:55.138244"}
+2025-11-07T21:51:55.138674+0530 | INFO | install_app | Opening Ubuntu App Center
+2025-11-07T21:51:55.140826+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T21:51:58.147694+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:51:58.152824+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:51:58.153173+0530 | WARNING | install_app | Could not focus software center window, trying alternatives
+2025-11-07T21:51:59.159867+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_center_initial_2025-11-07_21-51-59.png
+2025-11-07T21:52:00.160361+0530 | INFO | install_app | Trying search method 1
+2025-11-07T21:52:01.165247+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:52:03.169011+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "a"]}
+2025-11-07T21:52:04.179475+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T21:52:05.180271+0530 | INFO | install_app | Search method 1 seems to have worked
+2025-11-07T21:52:05.382948+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:52:08.386898+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/after_search_attempt_2025-11-07_21-52-08.png
+2025-11-07T21:52:08.387316+0530 | INFO | install_app | Looking for Mumble in search results
+2025-11-07T21:52:08.391608+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_search_results_2025-11-07_21-52-08.png
+2025-11-07T21:52:09.593524+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:52:10.295246+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:52:10.997500+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:52:11.699680+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:52:14.700480+0530 | INFO | install_app | Looking for Install button
+2025-11-07T21:52:16.903235+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:52:17.605666+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:52:18.307492+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:52:19.008821+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:52:19.710962+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:52:20.412973+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:52:24.413944+0530 | INFO | install_app | Entering password for authentication
+2025-11-07T21:52:24.873331+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T21:52:25.574918+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:52:26.575520+0530 | INFO | install_app | Waiting for installation to complete
+2025-11-07T21:52:36.583143+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_21-52-36.png
+2025-11-07T21:52:36.610393+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:52:36.611079+0530 | INFO | core.logger | {"task": "install_app", "status": "success", "ts": "2025-11-07T21:52:36.611020"}
+2025-11-07T21:52:36.634780+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-52-36.png
+2025-11-07T21:57:33.760334+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T21:57:33.760804+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T21:57:33.761180+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T21:57:33.761089"}
+2025-11-07T21:57:33.761468+0530 | INFO | tasks.install_app | Opening Ubuntu App Center
+2025-11-07T21:57:33.761703+0530 | INFO | tasks.install_app | Attempting to open Snap Store
+2025-11-07T21:57:33.765155+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T21:57:36.771259+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_21-57-36.png
+2025-11-07T21:57:36.771621+0530 | INFO | tasks.install_app | Debug screenshot captured: opened_snap-store - Successfully opened Snap Store
+2025-11-07T21:57:36.776556+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T21:57:36.780718+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T21:57:36.785461+0530 | ERROR | core.gui_controller | Failed to focus window GNOME Software: Command '['wmctrl', '-a', 'GNOME Software']' returned non-zero exit status 1.
+2025-11-07T21:57:36.790587+0530 | ERROR | core.gui_controller | Failed to focus window Snap Store: Command '['wmctrl', '-a', 'Snap Store']' returned non-zero exit status 1.
+2025-11-07T21:57:36.790973+0530 | WARNING | tasks.install_app | Could not focus any known software center window
+2025-11-07T21:57:36.794203+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_21-57-36.png
+2025-11-07T21:57:36.794486+0530 | INFO | tasks.install_app | Debug screenshot captured: window_focus_failed - Failed to focus software center window
+2025-11-07T21:57:37.794746+0530 | INFO | tasks.install_app | Executing search_bar_focus with 4 fallback methods
+2025-11-07T21:57:37.798791+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_21-57-37.png
+2025-11-07T21:57:37.799105+0530 | INFO | tasks.install_app | Debug screenshot captured: before_search_bar_focus - Before attempting search_bar_focus
+2025-11-07T21:57:37.799269+0530 | INFO | tasks.install_app | Attempt 1/4: Ctrl+F Keyboard Shortcut
+2025-11-07T21:57:38.804845+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T21:57:39.309882+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_21-57-39.png
+2025-11-07T21:57:39.310272+0530 | INFO | tasks.install_app | Debug screenshot captured: after_hotkey_ctrl_f - After pressing ctrl + f
+2025-11-07T21:57:39.310525+0530 | INFO | tasks.install_app | Success with method: Ctrl+F Keyboard Shortcut
+2025-11-07T21:57:40.313044+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "a"]}
+2025-11-07T21:57:41.123408+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T21:57:41.624180+0530 | INFO | tasks.install_app | Typed app name: Mumble
+2025-11-07T21:57:41.631573+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_typed_Mumble_2025-11-07_21-57-41.png
+2025-11-07T21:57:41.631927+0530 | INFO | tasks.install_app | Debug screenshot captured: typed_Mumble - Typed Mumble in search
+2025-11-07T21:57:41.833358+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:57:44.840576+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_21-57-44.png
+2025-11-07T21:57:44.840929+0530 | INFO | tasks.install_app | Debug screenshot captured: after_search_enter - After pressing Enter to search
+2025-11-07T21:57:44.841156+0530 | INFO | tasks.install_app | Executing app_result_selection with 2 fallback methods
+2025-11-07T21:57:44.846958+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_21-57-44.png
+2025-11-07T21:57:44.847293+0530 | INFO | tasks.install_app | Debug screenshot captured: before_app_result_selection - Before attempting app_result_selection
+2025-11-07T21:57:44.847564+0530 | INFO | tasks.install_app | Attempt 1/2: Arrow Down Navigation
+2025-11-07T21:57:45.048797+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:57:45.251135+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:57:45.453188+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T21:57:45.953875+0530 | INFO | tasks.install_app | Success with method: Arrow Down Navigation
+2025-11-07T21:57:46.155247+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:57:49.162095+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_21-57-49.png
+2025-11-07T21:57:49.162847+0530 | INFO | tasks.install_app | Debug screenshot captured: app_details_opened - Opened details for Mumble
+2025-11-07T21:57:49.163570+0530 | INFO | tasks.install_app | Executing install_button_click with 3 fallback methods
+2025-11-07T21:57:49.170155+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_21-57-49.png
+2025-11-07T21:57:49.170491+0530 | INFO | tasks.install_app | Debug screenshot captured: before_install_button_click - Before attempting install_button_click
+2025-11-07T21:57:49.170647+0530 | INFO | tasks.install_app | Attempt 1/3: Tab to Install Button
+2025-11-07T21:57:49.371745+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:57:49.973177+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:57:50.574788+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:57:51.175990+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:57:51.778041+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T21:57:52.379802+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:57:54.380232+0530 | INFO | tasks.install_app | Success with method: Tab to Install Button
+2025-11-07T21:57:54.380561+0530 | INFO | tasks.install_app | Install button activated, waiting for authentication
+2025-11-07T21:57:56.380967+0530 | INFO | tasks.install_app | Attempting password entry
+2025-11-07T21:57:56.843077+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T21:57:57.545200+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T21:57:58.552462+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_21-57-58.png
+2025-11-07T21:57:58.552818+0530 | INFO | tasks.install_app | Debug screenshot captured: password_entered - Password entered for authentication
+2025-11-07T21:57:58.553025+0530 | INFO | tasks.install_app | Waiting for Mumble installation to complete
+2025-11-07T21:58:00.559170+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_21-58-00.png
+2025-11-07T21:58:00.559561+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_0 - Installation progress checkpoint 1/5
+2025-11-07T21:58:02.564839+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_21-58-02.png
+2025-11-07T21:58:02.565544+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_1 - Installation progress checkpoint 2/5
+2025-11-07T21:58:04.576620+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_21-58-04.png
+2025-11-07T21:58:04.577550+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_2 - Installation progress checkpoint 3/5
+2025-11-07T21:58:06.585305+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_21-58-06.png
+2025-11-07T21:58:06.586008+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_3 - Installation progress checkpoint 4/5
+2025-11-07T21:58:08.593534+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_21-58-08.png
+2025-11-07T21:58:08.593939+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_4 - Installation progress checkpoint 5/5
+2025-11-07T21:58:08.599796+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_21-58-08.png
+2025-11-07T21:58:08.600192+0530 | INFO | tasks.install_app | 
+=== Debug Screenshot Report ===
+1. opened_snap-store: /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_21-57-36.png
+   Description: Successfully opened Snap Store
+2. window_focus_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_21-57-36.png
+   Description: Failed to focus software center window
+3. before_search_bar_focus: /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_21-57-37.png
+   Description: Before attempting search_bar_focus
+4. after_hotkey_ctrl_f: /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_21-57-39.png
+   Description: After pressing ctrl + f
+5. typed_Mumble: /home/vishnu/desktop-automation/logs/screenshots/debug_typed_Mumble_2025-11-07_21-57-41.png
+   Description: Typed Mumble in search
+6. after_search_enter: /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_21-57-44.png
+   Description: After pressing Enter to search
+7. before_app_result_selection: /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_21-57-44.png
+   Description: Before attempting app_result_selection
+8. app_details_opened: /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_21-57-49.png
+   Description: Opened details for Mumble
+9. before_install_button_click: /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_21-57-49.png
+   Description: Before attempting install_button_click
+10. password_entered: /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_21-57-58.png
+   Description: Password entered for authentication
+11. installation_progress_0: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_21-58-00.png
+   Description: Installation progress checkpoint 1/5
+12. installation_progress_1: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_21-58-02.png
+   Description: Installation progress checkpoint 2/5
+13. installation_progress_2: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_21-58-04.png
+   Description: Installation progress checkpoint 3/5
+14. installation_progress_3: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_21-58-06.png
+   Description: Installation progress checkpoint 4/5
+15. installation_progress_4: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_21-58-08.png
+   Description: Installation progress checkpoint 5/5
+
+2025-11-07T21:58:08.629551+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T21:58:08.631261+0530 | INFO | core.logger | {"task": "install_app", "status": "success", "ts": "2025-11-07T21:58:08.631198"}
+2025-11-07T21:58:08.639625+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_21-58-08.png
+2025-11-07T22:03:58.941121+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T22:03:58.941481+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T22:03:58.941687+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T22:03:58.941651"}
+2025-11-07T22:03:58.941849+0530 | INFO | tasks.install_app | Opening Ubuntu App Center
+2025-11-07T22:03:58.941990+0530 | INFO | tasks.install_app | Attempting to open Snap Store
+2025-11-07T22:03:58.943634+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T22:04:01.950798+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-04-01.png
+2025-11-07T22:04:01.951181+0530 | INFO | tasks.install_app | Debug screenshot captured: opened_snap-store - Successfully opened Snap Store
+2025-11-07T22:04:01.956292+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T22:04:01.962936+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T22:04:01.969531+0530 | ERROR | core.gui_controller | Failed to focus window GNOME Software: Command '['wmctrl', '-a', 'GNOME Software']' returned non-zero exit status 1.
+2025-11-07T22:04:01.975400+0530 | ERROR | core.gui_controller | Failed to focus window Snap Store: Command '['wmctrl', '-a', 'Snap Store']' returned non-zero exit status 1.
+2025-11-07T22:04:01.975751+0530 | WARNING | tasks.install_app | Could not focus any known software center window
+2025-11-07T22:04:01.980217+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_22-04-01.png
+2025-11-07T22:04:01.980597+0530 | INFO | tasks.install_app | Debug screenshot captured: window_focus_failed - Failed to focus software center window
+2025-11-07T22:04:02.981083+0530 | INFO | tasks.install_app | Executing search_bar_focus with 4 fallback methods
+2025-11-07T22:04:02.988634+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_22-04-02.png
+2025-11-07T22:04:02.989125+0530 | INFO | tasks.install_app | Debug screenshot captured: before_search_bar_focus - Before attempting search_bar_focus
+2025-11-07T22:04:02.989396+0530 | INFO | tasks.install_app | Attempt 1/4: Ctrl+F Keyboard Shortcut
+2025-11-07T22:04:03.995827+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T22:04:04.502042+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_22-04-04.png
+2025-11-07T22:04:04.502439+0530 | INFO | tasks.install_app | Debug screenshot captured: after_hotkey_ctrl_f - After pressing ctrl + f
+2025-11-07T22:04:04.502633+0530 | INFO | tasks.install_app | Success with method: Ctrl+F Keyboard Shortcut
+2025-11-07T22:04:05.506217+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "a"]}
+2025-11-07T22:04:06.317056+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 6}
+2025-11-07T22:04:06.817655+0530 | INFO | tasks.install_app | Typed app name: Mumble
+2025-11-07T22:04:06.823150+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_typed_Mumble_2025-11-07_22-04-06.png
+2025-11-07T22:04:06.823631+0530 | INFO | tasks.install_app | Debug screenshot captured: typed_Mumble - Typed Mumble in search
+2025-11-07T22:04:07.024851+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:04:10.031835+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_22-04-10.png
+2025-11-07T22:04:10.032577+0530 | INFO | tasks.install_app | Debug screenshot captured: after_search_enter - After pressing Enter to search
+2025-11-07T22:04:10.033364+0530 | INFO | tasks.install_app | Executing app_result_selection with 2 fallback methods
+2025-11-07T22:04:10.040956+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_22-04-10.png
+2025-11-07T22:04:10.041586+0530 | INFO | tasks.install_app | Debug screenshot captured: before_app_result_selection - Before attempting app_result_selection
+2025-11-07T22:04:10.041974+0530 | INFO | tasks.install_app | Attempt 1/2: Arrow Down Navigation
+2025-11-07T22:04:10.244778+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:04:10.447045+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:04:10.648808+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:04:11.149311+0530 | INFO | tasks.install_app | Success with method: Arrow Down Navigation
+2025-11-07T22:04:11.350949+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:04:14.355725+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_22-04-14.png
+2025-11-07T22:04:14.356080+0530 | INFO | tasks.install_app | Debug screenshot captured: app_details_opened - Opened details for Mumble
+2025-11-07T22:04:14.356302+0530 | INFO | tasks.install_app | Executing install_button_click with 3 fallback methods
+2025-11-07T22:04:14.363154+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_22-04-14.png
+2025-11-07T22:04:14.363749+0530 | INFO | tasks.install_app | Debug screenshot captured: before_install_button_click - Before attempting install_button_click
+2025-11-07T22:04:14.364217+0530 | INFO | tasks.install_app | Attempt 1/3: Tab to Install Button
+2025-11-07T22:04:14.566927+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:04:15.168608+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:04:15.770292+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:04:16.371946+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:04:16.974203+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:04:17.576041+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:04:19.579172+0530 | INFO | tasks.install_app | Success with method: Tab to Install Button
+2025-11-07T22:04:19.579766+0530 | INFO | tasks.install_app | Install button activated, waiting for authentication
+2025-11-07T22:04:21.580293+0530 | INFO | tasks.install_app | Attempting password entry
+2025-11-07T22:04:22.037585+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T22:04:22.739579+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:04:23.743931+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_22-04-23.png
+2025-11-07T22:04:23.744306+0530 | INFO | tasks.install_app | Debug screenshot captured: password_entered - Password entered for authentication
+2025-11-07T22:04:23.744709+0530 | INFO | tasks.install_app | Waiting for Mumble installation to complete
+2025-11-07T22:04:25.749023+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_22-04-25.png
+2025-11-07T22:04:25.749405+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_0 - Installation progress checkpoint 1/5
+2025-11-07T22:04:27.754851+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_22-04-27.png
+2025-11-07T22:04:27.755289+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_1 - Installation progress checkpoint 2/5
+2025-11-07T22:04:29.762425+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_22-04-29.png
+2025-11-07T22:04:29.763044+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_2 - Installation progress checkpoint 3/5
+2025-11-07T22:04:31.769825+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_22-04-31.png
+2025-11-07T22:04:31.770452+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_3 - Installation progress checkpoint 4/5
+2025-11-07T22:04:33.777903+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_22-04-33.png
+2025-11-07T22:04:33.778574+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_4 - Installation progress checkpoint 5/5
+2025-11-07T22:04:33.784652+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_22-04-33.png
+2025-11-07T22:04:33.784986+0530 | INFO | tasks.install_app | Verifying installation completed successfully
+2025-11-07T22:04:33.789312+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_verification_2025-11-07_22-04-33.png
+2025-11-07T22:04:33.789601+0530 | INFO | tasks.install_app | Debug screenshot captured: before_verification - Before verification attempt
+2025-11-07T22:04:33.789764+0530 | INFO | tasks.install_verification | [Mumble] Verification method 1: which command
+2025-11-07T22:04:33.791635+0530 | WARNING | tasks.install_verification | [Mumble] ❌ which command FAILED
+2025-11-07T22:04:33.791890+0530 | INFO | tasks.install_verification | [Mumble] Verification method 2: package managers (dpkg/snap)
+2025-11-07T22:04:33.835948+0530 | WARNING | tasks.install_verification | [Mumble] ❌ dpkg check FAILED
+2025-11-07T22:04:34.195731+0530 | WARNING | tasks.install_verification | [Mumble] ❌ snap check FAILED
+2025-11-07T22:04:34.196050+0530 | INFO | tasks.install_verification | [Mumble] Verification method 3: executable check
+2025-11-07T22:04:34.197116+0530 | WARNING | tasks.install_verification | [Mumble] ❌ executable check FAILED
+2025-11-07T22:04:34.197367+0530 | ERROR | tasks.install_verification | ❌ Verification FAILED for Mumble: Verified via 0/3 methods
+2025-11-07T22:04:34.197666+0530 | ERROR | tasks.install_app | INSTALLATION FAILED TO VERIFY: Mumble is NOT installed
+2025-11-07T22:04:34.201305+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_verification_failed_2025-11-07_22-04-34.png
+2025-11-07T22:04:34.201667+0530 | INFO | tasks.install_app | Debug screenshot captured: verification_failed - Verification failed for Mumble
+2025-11-07T22:04:34.238606+0530 | INFO | tasks.install_verification | ✅ Mumble process is RUNNING
+2025-11-07T22:04:34.238984+0530 | INFO | tasks.install_app | Process check result: {'running': True}
+2025-11-07T22:04:34.282379+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T22:04:34.305285+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-04-34.png
+2025-11-07T22:04:34.305749+0530 | INFO | tasks.install_app | Debug screenshot captured: error_occurred - Error: Mumble installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:04:34.306224+0530 | ERROR | tasks.install_app | 
+=== Debug Screenshot Report ===
+1. opened_snap-store: /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-04-01.png
+   Description: Successfully opened Snap Store
+2. window_focus_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_22-04-01.png
+   Description: Failed to focus software center window
+3. before_search_bar_focus: /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_22-04-02.png
+   Description: Before attempting search_bar_focus
+4. after_hotkey_ctrl_f: /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_22-04-04.png
+   Description: After pressing ctrl + f
+5. typed_Mumble: /home/vishnu/desktop-automation/logs/screenshots/debug_typed_Mumble_2025-11-07_22-04-06.png
+   Description: Typed Mumble in search
+6. after_search_enter: /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_22-04-10.png
+   Description: After pressing Enter to search
+7. before_app_result_selection: /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_22-04-10.png
+   Description: Before attempting app_result_selection
+8. app_details_opened: /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_22-04-14.png
+   Description: Opened details for Mumble
+9. before_install_button_click: /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_22-04-14.png
+   Description: Before attempting install_button_click
+10. password_entered: /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_22-04-23.png
+   Description: Password entered for authentication
+11. installation_progress_0: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_22-04-25.png
+   Description: Installation progress checkpoint 1/5
+12. installation_progress_1: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_22-04-27.png
+   Description: Installation progress checkpoint 2/5
+13. installation_progress_2: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_22-04-29.png
+   Description: Installation progress checkpoint 3/5
+14. installation_progress_3: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_22-04-31.png
+   Description: Installation progress checkpoint 4/5
+15. installation_progress_4: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_22-04-33.png
+   Description: Installation progress checkpoint 5/5
+16. before_verification: /home/vishnu/desktop-automation/logs/screenshots/debug_before_verification_2025-11-07_22-04-33.png
+   Description: Before verification attempt
+17. verification_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_verification_failed_2025-11-07_22-04-34.png
+   Description: Verification failed for Mumble
+18. error_occurred: /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-04-34.png
+   Description: Error: Mumble installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+
+2025-11-07T22:04:34.306571+0530 | INFO | core.logger | {"task": "install_app", "status": "error", "ts": "2025-11-07T22:04:34.306524", "error": "Mumble installation appeared to succeed but verification failed. Details: Verified via 0/3 methods", "error_type": "RuntimeError"}
+2025-11-07T22:04:34.311053+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_22-04-34.png
+2025-11-07T22:27:46.000209+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:27:46.000673+0530 | INFO | __main__ | Starting VLC Installation Workflow
+2025-11-07T22:27:46.000886+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:27:46.001060+0530 | INFO | __main__ | Task: Install VLC via App Center
+2025-11-07T22:27:46.001251+0530 | INFO | __main__ | Package: vlc
+2025-11-07T22:27:46.001657+0530 | INFO | __main__ | Environment: Ubuntu 24.04 GNOME
+2025-11-07T22:27:46.001885+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:27:46.002082+0530 | INFO | __main__ | Initializing automation resources...
+2025-11-07T22:27:46.015725+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T22:27:46.016010+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T22:27:46.016179+0530 | INFO | __main__ | Executing installation workflow...
+2025-11-07T22:27:46.016360+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T22:27:46.016321"}
+2025-11-07T22:27:46.016515+0530 | INFO | tasks.install_app | Opening Ubuntu App Center
+2025-11-07T22:27:46.016653+0530 | INFO | tasks.install_app | Attempting to open Snap Store
+2025-11-07T22:27:46.018453+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T22:27:49.044432+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-27-49.png
+2025-11-07T22:27:49.045207+0530 | INFO | tasks.install_app | Debug screenshot captured: opened_snap-store - Successfully opened Snap Store
+2025-11-07T22:27:49.062811+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T22:27:49.069248+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T22:27:49.078819+0530 | ERROR | core.gui_controller | Failed to focus window GNOME Software: Command '['wmctrl', '-a', 'GNOME Software']' returned non-zero exit status 1.
+2025-11-07T22:27:49.086143+0530 | ERROR | core.gui_controller | Failed to focus window Snap Store: Command '['wmctrl', '-a', 'Snap Store']' returned non-zero exit status 1.
+2025-11-07T22:27:49.086624+0530 | WARNING | tasks.install_app | Could not focus any known software center window
+2025-11-07T22:27:49.092573+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_22-27-49.png
+2025-11-07T22:27:49.092948+0530 | INFO | tasks.install_app | Debug screenshot captured: window_focus_failed - Failed to focus software center window
+2025-11-07T22:27:50.093582+0530 | INFO | tasks.install_app | Executing search_bar_focus with 4 fallback methods
+2025-11-07T22:27:50.107577+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_22-27-50.png
+2025-11-07T22:27:50.108285+0530 | INFO | tasks.install_app | Debug screenshot captured: before_search_bar_focus - Before attempting search_bar_focus
+2025-11-07T22:27:50.108781+0530 | INFO | tasks.install_app | Attempt 1/4: Ctrl+F Keyboard Shortcut
+2025-11-07T22:27:51.121546+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T22:27:51.629851+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_22-27-51.png
+2025-11-07T22:27:51.630242+0530 | INFO | tasks.install_app | Debug screenshot captured: after_hotkey_ctrl_f - After pressing ctrl + f
+2025-11-07T22:27:51.630454+0530 | INFO | tasks.install_app | Success with method: Ctrl+F Keyboard Shortcut
+2025-11-07T22:27:52.633751+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "a"]}
+2025-11-07T22:27:53.293001+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 3}
+2025-11-07T22:27:53.793821+0530 | INFO | tasks.install_app | Typed app name: VLC
+2025-11-07T22:27:53.803998+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_typed_VLC_2025-11-07_22-27-53.png
+2025-11-07T22:27:53.804562+0530 | INFO | tasks.install_app | Debug screenshot captured: typed_VLC - Typed VLC in search
+2025-11-07T22:27:54.010446+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:27:57.016780+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_22-27-57.png
+2025-11-07T22:27:57.017423+0530 | INFO | tasks.install_app | Debug screenshot captured: after_search_enter - After pressing Enter to search
+2025-11-07T22:27:57.017846+0530 | INFO | tasks.install_app | Executing app_result_selection with 2 fallback methods
+2025-11-07T22:27:57.023429+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_22-27-57.png
+2025-11-07T22:27:57.023960+0530 | INFO | tasks.install_app | Debug screenshot captured: before_app_result_selection - Before attempting app_result_selection
+2025-11-07T22:27:57.024443+0530 | INFO | tasks.install_app | Attempt 1/2: Arrow Down Navigation
+2025-11-07T22:27:57.227119+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:27:57.429656+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:27:57.633879+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:27:58.134752+0530 | INFO | tasks.install_app | Success with method: Arrow Down Navigation
+2025-11-07T22:27:58.337130+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:28:01.350636+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_22-28-01.png
+2025-11-07T22:28:01.351435+0530 | INFO | tasks.install_app | Debug screenshot captured: app_details_opened - Opened details for VLC
+2025-11-07T22:28:01.351979+0530 | INFO | tasks.install_app | Executing install_button_click with 3 fallback methods
+2025-11-07T22:28:01.358905+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_22-28-01.png
+2025-11-07T22:28:01.359511+0530 | INFO | tasks.install_app | Debug screenshot captured: before_install_button_click - Before attempting install_button_click
+2025-11-07T22:28:01.359781+0530 | INFO | tasks.install_app | Attempt 1/3: Tab to Install Button
+2025-11-07T22:28:01.564281+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:28:02.166568+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:28:02.768628+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:28:03.371032+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:28:03.972629+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:28:04.574445+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:28:06.575172+0530 | INFO | tasks.install_app | Success with method: Tab to Install Button
+2025-11-07T22:28:06.575804+0530 | INFO | tasks.install_app | Install button activated, waiting for authentication
+2025-11-07T22:28:08.576318+0530 | INFO | tasks.install_app | Attempting password entry
+2025-11-07T22:28:09.035667+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T22:28:09.737644+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:28:10.744027+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_22-28-10.png
+2025-11-07T22:28:10.744417+0530 | INFO | tasks.install_app | Debug screenshot captured: password_entered - Password entered for authentication
+2025-11-07T22:28:10.744658+0530 | INFO | tasks.install_app | Waiting for VLC installation to complete
+2025-11-07T22:28:12.749855+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_22-28-12.png
+2025-11-07T22:28:12.750309+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_0 - Installation progress checkpoint 1/5
+2025-11-07T22:28:14.755176+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_22-28-14.png
+2025-11-07T22:28:14.755886+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_1 - Installation progress checkpoint 2/5
+2025-11-07T22:28:16.762057+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_22-28-16.png
+2025-11-07T22:28:16.762757+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_2 - Installation progress checkpoint 3/5
+2025-11-07T22:28:18.769824+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_22-28-18.png
+2025-11-07T22:28:18.770566+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_3 - Installation progress checkpoint 4/5
+2025-11-07T22:28:20.775652+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_22-28-20.png
+2025-11-07T22:28:20.776114+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_4 - Installation progress checkpoint 5/5
+2025-11-07T22:28:20.780452+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_22-28-20.png
+2025-11-07T22:28:20.780804+0530 | INFO | tasks.install_app | Verifying installation completed successfully
+2025-11-07T22:28:20.784633+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_verification_2025-11-07_22-28-20.png
+2025-11-07T22:28:20.784981+0530 | INFO | tasks.install_app | Debug screenshot captured: before_verification - Before verification attempt
+2025-11-07T22:28:20.785279+0530 | INFO | tasks.install_verification | [VLC] Verification method 1: which command
+2025-11-07T22:28:20.787825+0530 | WARNING | tasks.install_verification | [VLC] ❌ which command FAILED
+2025-11-07T22:28:20.788124+0530 | INFO | tasks.install_verification | [VLC] Verification method 2: package managers (dpkg/snap)
+2025-11-07T22:28:20.839687+0530 | WARNING | tasks.install_verification | [VLC] ❌ dpkg check FAILED
+2025-11-07T22:28:21.244896+0530 | WARNING | tasks.install_verification | [VLC] ❌ snap check FAILED
+2025-11-07T22:28:21.245483+0530 | INFO | tasks.install_verification | [VLC] Verification method 3: executable check
+2025-11-07T22:28:21.246982+0530 | WARNING | tasks.install_verification | [VLC] ❌ executable check FAILED
+2025-11-07T22:28:21.247556+0530 | ERROR | tasks.install_verification | ❌ Verification FAILED for VLC: Verified via 0/3 methods
+2025-11-07T22:28:21.247970+0530 | ERROR | tasks.install_app | INSTALLATION FAILED TO VERIFY: VLC is NOT installed
+2025-11-07T22:28:21.252399+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_verification_failed_2025-11-07_22-28-21.png
+2025-11-07T22:28:21.252798+0530 | INFO | tasks.install_app | Debug screenshot captured: verification_failed - Verification failed for VLC
+2025-11-07T22:28:21.290757+0530 | INFO | tasks.install_verification | ✅ VLC process is RUNNING
+2025-11-07T22:28:21.291150+0530 | INFO | tasks.install_app | Process check result: {'running': True}
+2025-11-07T22:28:21.322648+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T22:28:21.334128+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-28-21.png
+2025-11-07T22:28:21.334438+0530 | INFO | tasks.install_app | Debug screenshot captured: error_occurred - Error: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:28:21.334642+0530 | ERROR | tasks.install_app | 
+=== Debug Screenshot Report ===
+1. opened_snap-store: /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-27-49.png
+   Description: Successfully opened Snap Store
+2. window_focus_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_22-27-49.png
+   Description: Failed to focus software center window
+3. before_search_bar_focus: /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_22-27-50.png
+   Description: Before attempting search_bar_focus
+4. after_hotkey_ctrl_f: /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_22-27-51.png
+   Description: After pressing ctrl + f
+5. typed_VLC: /home/vishnu/desktop-automation/logs/screenshots/debug_typed_VLC_2025-11-07_22-27-53.png
+   Description: Typed VLC in search
+6. after_search_enter: /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_22-27-57.png
+   Description: After pressing Enter to search
+7. before_app_result_selection: /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_22-27-57.png
+   Description: Before attempting app_result_selection
+8. app_details_opened: /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_22-28-01.png
+   Description: Opened details for VLC
+9. before_install_button_click: /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_22-28-01.png
+   Description: Before attempting install_button_click
+10. password_entered: /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_22-28-10.png
+   Description: Password entered for authentication
+11. installation_progress_0: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_22-28-12.png
+   Description: Installation progress checkpoint 1/5
+12. installation_progress_1: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_22-28-14.png
+   Description: Installation progress checkpoint 2/5
+13. installation_progress_2: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_22-28-16.png
+   Description: Installation progress checkpoint 3/5
+14. installation_progress_3: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_22-28-18.png
+   Description: Installation progress checkpoint 4/5
+15. installation_progress_4: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_22-28-20.png
+   Description: Installation progress checkpoint 5/5
+16. before_verification: /home/vishnu/desktop-automation/logs/screenshots/debug_before_verification_2025-11-07_22-28-20.png
+   Description: Before verification attempt
+17. verification_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_verification_failed_2025-11-07_22-28-21.png
+   Description: Verification failed for VLC
+18. error_occurred: /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-28-21.png
+   Description: Error: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+
+2025-11-07T22:28:21.335050+0530 | INFO | core.logger | {"task": "install_app", "status": "error", "ts": "2025-11-07T22:28:21.335008", "error": "VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods", "error_type": "RuntimeError"}
+2025-11-07T22:28:21.335232+0530 | ERROR | __main__ | ❌ Workflow execution error: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:28:21.335382+0530 | ERROR | __main__ | Full error details:
+Traceback (most recent call last):
+
+  File "/home/vishnu/desktop-automation/test_vlc_install.py", line 92, in <module>
+    exit(main())
+         └ <function main at 0x7247c310e340>
+
+> File "/home/vishnu/desktop-automation/test_vlc_install.py", line 35, in main
+    result = execute(args, resources)
+             │       │     └ {'gui': <core.gui_controller.GUIController object at 0x7247be161880>, 'vision': <core.vision_engine.VisionEngine object at 0x...
+             │       └ {'app_name': 'VLC', 'package_name': 'vlc', 'password': 'rgukt'}
+             └ <function execute at 0x7247a98efa60>
+
+  File "/home/vishnu/desktop-automation/tasks/install_app.py", line 334, in execute
+    raise RuntimeError(error_msg)
+                       └ 'VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods'
+
+RuntimeError: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:28:21.337166+0530 | INFO | __main__ | Cleaning up automation resources...
+2025-11-07T22:28:21.343545+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_22-28-21.png
+2025-11-07T22:28:21.366025+0530 | INFO | __main__ | Workflow execution completed
+2025-11-07T22:30:40.434722+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:30:40.435185+0530 | INFO | __main__ | Starting VLC Installation Workflow
+2025-11-07T22:30:40.435373+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:30:40.435617+0530 | INFO | __main__ | Task: Install VLC via App Center
+2025-11-07T22:30:40.435774+0530 | INFO | __main__ | Package: vlc
+2025-11-07T22:30:40.435921+0530 | INFO | __main__ | Environment: Ubuntu 24.04 GNOME
+2025-11-07T22:30:40.436062+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:30:40.436237+0530 | INFO | __main__ | Initializing automation resources...
+2025-11-07T22:30:40.446974+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T22:30:40.447254+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T22:30:40.447412+0530 | INFO | __main__ | Executing installation workflow...
+2025-11-07T22:30:40.447709+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T22:30:40.447669"}
+2025-11-07T22:30:40.447896+0530 | INFO | tasks.install_app | Opening Ubuntu App Center
+2025-11-07T22:30:40.448058+0530 | INFO | tasks.install_app | Attempting to open Snap Store
+2025-11-07T22:30:40.449601+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T22:30:40.449826+0530 | INFO | tasks.install_app | Waiting for Snap Store to fully load...
+2025-11-07T22:30:45.455211+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-30-45.png
+2025-11-07T22:30:45.455673+0530 | INFO | tasks.install_app | Debug screenshot captured: opened_snap-store - Successfully opened Snap Store
+2025-11-07T22:30:45.462843+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T22:30:45.468653+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T22:30:45.477650+0530 | ERROR | core.gui_controller | Failed to focus window GNOME Software: Command '['wmctrl', '-a', 'GNOME Software']' returned non-zero exit status 1.
+2025-11-07T22:30:45.484540+0530 | ERROR | core.gui_controller | Failed to focus window Snap Store: Command '['wmctrl', '-a', 'Snap Store']' returned non-zero exit status 1.
+2025-11-07T22:30:45.485060+0530 | WARNING | tasks.install_app | Could not focus any known software center window using wmctrl
+2025-11-07T22:30:45.485423+0530 | INFO | tasks.install_app | Attempting to focus by clicking on the window
+2025-11-07T22:30:45.941957+0530 | INFO | core.logger | {"action": "move_to", "window": "screen", "x": 683, "y": 384}
+2025-11-07T22:30:45.976975+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-30-45.png
+2025-11-07T22:30:45.977714+0530 | INFO | tasks.install_app | Debug screenshot captured: error_occurred - Error: 'NoneType' object cannot be interpreted as an integer
+2025-11-07T22:30:45.978320+0530 | ERROR | tasks.install_app | 
+=== Debug Screenshot Report ===
+1. opened_snap-store: /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-30-45.png
+   Description: Successfully opened Snap Store
+2. error_occurred: /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-30-45.png
+   Description: Error: 'NoneType' object cannot be interpreted as an integer
+
+2025-11-07T22:30:45.978682+0530 | INFO | core.logger | {"task": "install_app", "status": "error", "ts": "2025-11-07T22:30:45.978624", "error": "'NoneType' object cannot be interpreted as an integer", "error_type": "TypeError"}
+2025-11-07T22:30:45.978958+0530 | ERROR | __main__ | ❌ Workflow execution error: 'NoneType' object cannot be interpreted as an integer
+2025-11-07T22:30:45.979281+0530 | ERROR | __main__ | Full error details:
+Traceback (most recent call last):
+
+  File "/home/vishnu/desktop-automation/test_vlc_install.py", line 92, in <module>
+    exit(main())
+         └ <function main at 0x755ff6dda340>
+
+> File "/home/vishnu/desktop-automation/test_vlc_install.py", line 35, in main
+    result = execute(args, resources)
+             │       │     └ {'gui': <core.gui_controller.GUIController object at 0x755ff58f0bf0>, 'vision': <core.vision_engine.VisionEngine object at 0x...
+             │       └ {'app_name': 'VLC', 'package_name': 'vlc', 'password': 'rgukt'}
+             └ <function execute at 0x755fdd5dbb00>
+
+  File "/home/vishnu/desktop-automation/tasks/install_app.py", line 228, in execute
+    gui.click(screen_width // 2, screen_height // 2)
+    │   │     │                  └ 768
+    │   │     └ 1366
+    │   └ <function GUIController.click at 0x755fe2168a40>
+    └ <core.gui_controller.GUIController object at 0x755ff58f0bf0>
+
+  File "/home/vishnu/desktop-automation/core/gui_controller.py", line 52, in click
+    pyautogui.click(button=button, clicks=clicks, interval=interval)
+    │         │            │              │                └ None
+    │         │            │              └ 1
+    │         │            └ 'left'
+    │         └ <function click at 0x755fe2124680>
+    └ <module 'pyautogui' from '/home/vishnu/desktop-automation/.venv/lib/python3.12/site-packages/pyautogui/__init__.py'>
+
+  File "/home/vishnu/desktop-automation/.venv/lib/python3.12/site-packages/pyautogui/__init__.py", line 594, in wrapper
+    returnVal = wrappedFunction(*args, **kwargs)
+                │                │       └ {'button': 'left', 'clicks': 1, 'interval': None}
+                │                └ ()
+                └ <function click at 0x755fe21245e0>
+  File "/home/vishnu/desktop-automation/.venv/lib/python3.12/site-packages/pyautogui/__init__.py", line 1003, in click
+    time.sleep(interval)
+    │    │     └ None
+    │    └ <built-in function sleep>
+    └ <module 'time' (built-in)>
+
+TypeError: 'NoneType' object cannot be interpreted as an integer
+2025-11-07T22:30:45.994671+0530 | INFO | __main__ | Cleaning up automation resources...
+2025-11-07T22:30:46.005415+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_22-30-45.png
+2025-11-07T22:30:46.072462+0530 | INFO | __main__ | Workflow execution completed
+2025-11-07T22:33:28.994389+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:33:28.995205+0530 | INFO | __main__ | Starting VLC Installation Workflow
+2025-11-07T22:33:28.995590+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:33:28.995893+0530 | INFO | __main__ | Task: Install VLC via App Center
+2025-11-07T22:33:28.996202+0530 | INFO | __main__ | Package: vlc
+2025-11-07T22:33:28.996489+0530 | INFO | __main__ | Environment: Ubuntu 24.04 GNOME
+2025-11-07T22:33:28.996771+0530 | INFO | __main__ | ============================================================
+2025-11-07T22:33:28.997042+0530 | INFO | __main__ | Initializing automation resources...
+2025-11-07T22:33:29.015505+0530 | INFO | core.gui_controller | GUIController initialized for wayland
+2025-11-07T22:33:29.015941+0530 | INFO | core.vision_engine | VisionEngine initialized
+2025-11-07T22:33:29.016408+0530 | INFO | __main__ | Executing installation workflow...
+2025-11-07T22:33:29.016815+0530 | INFO | core.logger | {"task": "install_app", "status": "started", "ts": "2025-11-07T22:33:29.016725"}
+2025-11-07T22:33:29.017198+0530 | INFO | tasks.install_app | Opening Ubuntu App Center
+2025-11-07T22:33:29.017479+0530 | INFO | tasks.install_app | Attempting to open Snap Store
+2025-11-07T22:33:29.020213+0530 | INFO | core.logger | {"action": "system_command", "window": null, "cmd": "snap-store &"}
+2025-11-07T22:33:29.020620+0530 | INFO | tasks.install_app | Waiting for Snap Store to fully load...
+2025-11-07T22:33:34.036147+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-33-34.png
+2025-11-07T22:33:34.036670+0530 | INFO | tasks.install_app | Debug screenshot captured: opened_snap-store - Successfully opened Snap Store
+2025-11-07T22:33:34.046892+0530 | ERROR | core.gui_controller | Failed to focus window Software: Command '['wmctrl', '-a', 'Software']' returned non-zero exit status 1.
+2025-11-07T22:33:34.054493+0530 | ERROR | core.gui_controller | Failed to focus window Ubuntu Software: Command '['wmctrl', '-a', 'Ubuntu Software']' returned non-zero exit status 1.
+2025-11-07T22:33:34.063121+0530 | ERROR | core.gui_controller | Failed to focus window GNOME Software: Command '['wmctrl', '-a', 'GNOME Software']' returned non-zero exit status 1.
+2025-11-07T22:33:34.071234+0530 | ERROR | core.gui_controller | Failed to focus window Snap Store: Command '['wmctrl', '-a', 'Snap Store']' returned non-zero exit status 1.
+2025-11-07T22:33:34.071699+0530 | WARNING | tasks.install_app | Could not focus any known software center window using wmctrl
+2025-11-07T22:33:34.071973+0530 | INFO | tasks.install_app | Attempting to focus by clicking on the window
+2025-11-07T22:33:34.538302+0530 | INFO | core.logger | {"action": "move_to", "window": "screen", "x": 683, "y": 384}
+2025-11-07T22:33:34.740740+0530 | INFO | core.logger | {"action": "click_left", "window": null, "clicks": 1, "pos": [683, 384]}
+2025-11-07T22:33:35.749343+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_22-33-35.png
+2025-11-07T22:33:35.750571+0530 | INFO | tasks.install_app | Debug screenshot captured: window_focus_failed - Failed wmctrl focus, tried click fallback
+2025-11-07T22:33:37.751057+0530 | INFO | tasks.install_app | Executing search_bar_focus with 4 fallback methods
+2025-11-07T22:33:37.757026+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_22-33-37.png
+2025-11-07T22:33:37.757484+0530 | INFO | tasks.install_app | Debug screenshot captured: before_search_bar_focus - Before attempting search_bar_focus
+2025-11-07T22:33:37.757707+0530 | INFO | tasks.install_app | Attempt 1/4: Ctrl+F Keyboard Shortcut
+2025-11-07T22:33:38.767637+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "f"]}
+2025-11-07T22:33:39.276067+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_22-33-39.png
+2025-11-07T22:33:39.276523+0530 | INFO | tasks.install_app | Debug screenshot captured: after_hotkey_ctrl_f - After pressing ctrl + f
+2025-11-07T22:33:39.277060+0530 | INFO | tasks.install_app | Success with method: Ctrl+F Keyboard Shortcut
+2025-11-07T22:33:40.277591+0530 | INFO | tasks.install_app | Clearing existing text in search bar
+2025-11-07T22:33:41.283177+0530 | INFO | core.logger | {"action": "hotkey", "window": null, "keys": ["ctrl", "a"]}
+2025-11-07T22:33:41.783619+0530 | INFO | tasks.install_app | Typing app name: VLC
+2025-11-07T22:33:41.986463+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "v"}
+2025-11-07T22:33:42.287854+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "l"}
+2025-11-07T22:33:42.589906+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "c"}
+2025-11-07T22:33:43.690454+0530 | INFO | tasks.install_app | Successfully typed: VLC
+2025-11-07T22:33:43.694433+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_typed_VLC_2025-11-07_22-33-43.png
+2025-11-07T22:33:43.694775+0530 | INFO | tasks.install_app | Debug screenshot captured: typed_VLC - Typed VLC in search
+2025-11-07T22:33:43.896237+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:33:46.901690+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_22-33-46.png
+2025-11-07T22:33:46.902032+0530 | INFO | tasks.install_app | Debug screenshot captured: after_search_enter - After pressing Enter to search
+2025-11-07T22:33:46.902221+0530 | INFO | tasks.install_app | Executing app_result_selection with 2 fallback methods
+2025-11-07T22:33:46.908026+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_22-33-46.png
+2025-11-07T22:33:46.908392+0530 | INFO | tasks.install_app | Debug screenshot captured: before_app_result_selection - Before attempting app_result_selection
+2025-11-07T22:33:46.908564+0530 | INFO | tasks.install_app | Attempt 1/2: Arrow Down Navigation
+2025-11-07T22:33:47.110916+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:33:47.312222+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:33:47.513815+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "down"}
+2025-11-07T22:33:48.014429+0530 | INFO | tasks.install_app | Success with method: Arrow Down Navigation
+2025-11-07T22:33:48.220466+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:33:51.228517+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_22-33-51.png
+2025-11-07T22:33:51.228957+0530 | INFO | tasks.install_app | Debug screenshot captured: app_details_opened - Opened details for VLC
+2025-11-07T22:33:51.229165+0530 | INFO | tasks.install_app | Executing install_button_click with 3 fallback methods
+2025-11-07T22:33:51.238393+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_22-33-51.png
+2025-11-07T22:33:51.238874+0530 | INFO | tasks.install_app | Debug screenshot captured: before_install_button_click - Before attempting install_button_click
+2025-11-07T22:33:51.239048+0530 | INFO | tasks.install_app | Attempt 1/3: Tab to Install Button
+2025-11-07T22:33:51.443870+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:33:52.045229+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:33:52.646875+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:33:53.250229+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:33:53.852433+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "tab"}
+2025-11-07T22:33:54.456191+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:33:56.456733+0530 | INFO | tasks.install_app | Success with method: Tab to Install Button
+2025-11-07T22:33:56.457349+0530 | INFO | tasks.install_app | Install button activated, waiting for authentication
+2025-11-07T22:33:58.457952+0530 | INFO | tasks.install_app | Attempting password entry
+2025-11-07T22:33:58.916232+0530 | INFO | core.logger | {"action": "type_text", "window": null, "len": 5}
+2025-11-07T22:33:59.618137+0530 | INFO | core.logger | {"action": "press", "window": null, "key": "enter"}
+2025-11-07T22:34:00.624281+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_22-34-00.png
+2025-11-07T22:34:00.624845+0530 | INFO | tasks.install_app | Debug screenshot captured: password_entered - Password entered for authentication
+2025-11-07T22:34:00.625297+0530 | INFO | tasks.install_app | Waiting for VLC installation to complete
+2025-11-07T22:34:02.633883+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_22-34-02.png
+2025-11-07T22:34:02.634323+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_0 - Installation progress checkpoint 1/5
+2025-11-07T22:34:04.667569+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_22-34-04.png
+2025-11-07T22:34:04.670733+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_1 - Installation progress checkpoint 2/5
+2025-11-07T22:34:06.678863+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_22-34-06.png
+2025-11-07T22:34:06.679229+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_2 - Installation progress checkpoint 3/5
+2025-11-07T22:34:08.684564+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_22-34-08.png
+2025-11-07T22:34:08.684917+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_3 - Installation progress checkpoint 4/5
+2025-11-07T22:34:10.692266+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_22-34-10.png
+2025-11-07T22:34:10.692674+0530 | INFO | tasks.install_app | Debug screenshot captured: installation_progress_4 - Installation progress checkpoint 5/5
+2025-11-07T22:34:10.698210+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/app_installation_final_2025-11-07_22-34-10.png
+2025-11-07T22:34:10.698568+0530 | INFO | tasks.install_app | Verifying installation completed successfully
+2025-11-07T22:34:10.704469+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_before_verification_2025-11-07_22-34-10.png
+2025-11-07T22:34:10.704843+0530 | INFO | tasks.install_app | Debug screenshot captured: before_verification - Before verification attempt
+2025-11-07T22:34:10.705139+0530 | INFO | tasks.install_verification | [VLC] Verification method 1: which command
+2025-11-07T22:34:10.707714+0530 | WARNING | tasks.install_verification | [VLC] ❌ which command FAILED
+2025-11-07T22:34:10.707991+0530 | INFO | tasks.install_verification | [VLC] Verification method 2: package managers (dpkg/snap)
+2025-11-07T22:34:10.836834+0530 | WARNING | tasks.install_verification | [VLC] ❌ dpkg check FAILED
+2025-11-07T22:34:11.337528+0530 | WARNING | tasks.install_verification | [VLC] ❌ snap check FAILED
+2025-11-07T22:34:11.337828+0530 | INFO | tasks.install_verification | [VLC] Verification method 3: executable check
+2025-11-07T22:34:11.338901+0530 | WARNING | tasks.install_verification | [VLC] ❌ executable check FAILED
+2025-11-07T22:34:11.339250+0530 | ERROR | tasks.install_verification | ❌ Verification FAILED for VLC: Verified via 0/3 methods
+2025-11-07T22:34:11.339497+0530 | ERROR | tasks.install_app | INSTALLATION FAILED TO VERIFY: VLC is NOT installed
+2025-11-07T22:34:11.343625+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_verification_failed_2025-11-07_22-34-11.png
+2025-11-07T22:34:11.344001+0530 | INFO | tasks.install_app | Debug screenshot captured: verification_failed - Verification failed for VLC
+2025-11-07T22:34:11.377545+0530 | INFO | tasks.install_verification | ✅ VLC process is RUNNING
+2025-11-07T22:34:11.378074+0530 | INFO | tasks.install_app | Process check result: {'running': True}
+2025-11-07T22:34:11.410261+0530 | DEBUG | core.logger | Telegram not configured, skipping
+2025-11-07T22:34:11.416311+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-34-11.png
+2025-11-07T22:34:11.416722+0530 | INFO | tasks.install_app | Debug screenshot captured: error_occurred - Error: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:34:11.417086+0530 | ERROR | tasks.install_app | 
+=== Debug Screenshot Report ===
+1. opened_snap-store: /home/vishnu/desktop-automation/logs/screenshots/debug_opened_snap-store_2025-11-07_22-33-34.png
+   Description: Successfully opened Snap Store
+2. window_focus_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_window_focus_failed_2025-11-07_22-33-35.png
+   Description: Failed wmctrl focus, tried click fallback
+3. before_search_bar_focus: /home/vishnu/desktop-automation/logs/screenshots/debug_before_search_bar_focus_2025-11-07_22-33-37.png
+   Description: Before attempting search_bar_focus
+4. after_hotkey_ctrl_f: /home/vishnu/desktop-automation/logs/screenshots/debug_after_hotkey_ctrl_f_2025-11-07_22-33-39.png
+   Description: After pressing ctrl + f
+5. typed_VLC: /home/vishnu/desktop-automation/logs/screenshots/debug_typed_VLC_2025-11-07_22-33-43.png
+   Description: Typed VLC in search
+6. after_search_enter: /home/vishnu/desktop-automation/logs/screenshots/debug_after_search_enter_2025-11-07_22-33-46.png
+   Description: After pressing Enter to search
+7. before_app_result_selection: /home/vishnu/desktop-automation/logs/screenshots/debug_before_app_result_selection_2025-11-07_22-33-46.png
+   Description: Before attempting app_result_selection
+8. app_details_opened: /home/vishnu/desktop-automation/logs/screenshots/debug_app_details_opened_2025-11-07_22-33-51.png
+   Description: Opened details for VLC
+9. before_install_button_click: /home/vishnu/desktop-automation/logs/screenshots/debug_before_install_button_click_2025-11-07_22-33-51.png
+   Description: Before attempting install_button_click
+10. password_entered: /home/vishnu/desktop-automation/logs/screenshots/debug_password_entered_2025-11-07_22-34-00.png
+   Description: Password entered for authentication
+11. installation_progress_0: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_0_2025-11-07_22-34-02.png
+   Description: Installation progress checkpoint 1/5
+12. installation_progress_1: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_1_2025-11-07_22-34-04.png
+   Description: Installation progress checkpoint 2/5
+13. installation_progress_2: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_2_2025-11-07_22-34-06.png
+   Description: Installation progress checkpoint 3/5
+14. installation_progress_3: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_3_2025-11-07_22-34-08.png
+   Description: Installation progress checkpoint 4/5
+15. installation_progress_4: /home/vishnu/desktop-automation/logs/screenshots/debug_installation_progress_4_2025-11-07_22-34-10.png
+   Description: Installation progress checkpoint 5/5
+16. before_verification: /home/vishnu/desktop-automation/logs/screenshots/debug_before_verification_2025-11-07_22-34-10.png
+   Description: Before verification attempt
+17. verification_failed: /home/vishnu/desktop-automation/logs/screenshots/debug_verification_failed_2025-11-07_22-34-11.png
+   Description: Verification failed for VLC
+18. error_occurred: /home/vishnu/desktop-automation/logs/screenshots/debug_error_occurred_2025-11-07_22-34-11.png
+   Description: Error: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+
+2025-11-07T22:34:11.417541+0530 | INFO | core.logger | {"task": "install_app", "status": "error", "ts": "2025-11-07T22:34:11.417491", "error": "VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods", "error_type": "RuntimeError"}
+2025-11-07T22:34:11.417789+0530 | ERROR | __main__ | ❌ Workflow execution error: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:34:11.418033+0530 | ERROR | __main__ | Full error details:
+Traceback (most recent call last):
+
+  File "/home/vishnu/desktop-automation/test_vlc_install.py", line 92, in <module>
+    exit(main())
+         └ <function main at 0x7e64441da340>
+
+> File "/home/vishnu/desktop-automation/test_vlc_install.py", line 35, in main
+    result = execute(args, resources)
+             │       │     └ {'gui': <core.gui_controller.GUIController object at 0x7e642b190590>, 'vision': <core.vision_engine.VisionEngine object at 0x...
+             │       └ {'app_name': 'VLC', 'package_name': 'vlc', 'password': 'rgukt'}
+             └ <function execute at 0x7e642b1eba60>
+
+  File "/home/vishnu/desktop-automation/tasks/install_app.py", line 351, in execute
+    raise RuntimeError(error_msg)
+                       └ 'VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods'
+
+RuntimeError: VLC installation appeared to succeed but verification failed. Details: Verified via 0/3 methods
+2025-11-07T22:34:11.420587+0530 | INFO | __main__ | Cleaning up automation resources...
+2025-11-07T22:34:11.424652+0530 | INFO | core.logger | Screenshot saved (Wayland): /home/vishnu/desktop-automation/logs/screenshots/post_install_task_2025-11-07_22-34-11.png
+2025-11-07T22:34:11.445343+0530 | INFO | __main__ | Workflow execution completed
