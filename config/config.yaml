@@ -50,12 +50,16 @@ notifications:
     chat_id: "${TELEGRAM_CHAT_ID}"
     silent: false
 
-# System integration  
+# System integration (X11 only)
 system:
-  session_type_check: auto  # auto | wayland | x11
   terminal_command: ""
   shell: "/bin/bash"
-  fallback_screenshot_tool: "scrot"  # scrot | grim | xwd
+  screenshot_tool: "scrot"  # X11 screenshot tool
+
+# Installation credentials
+# Password used for App Center / polkit authentication dialog
+install:
+  sudo_password: "rgukt"
 
 # Task defaults
 tasks:

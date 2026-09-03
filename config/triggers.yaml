@@ -1,0 +1,34 @@
+triggers:
+- goal: take screenshot
+  name: morning_screenshot
+  time: 09:00
+  type: time
+- goal: organize downloads
+  name: pdf_organizer
+  path: /home/rajesh/Downloads
+  pattern: '*.pdf'
+  type: file
+- goal: suspend
+  name: low_battery
+  threshold: 15
+  type: battery
+- app: klavaro
+  goal: take screenshot
+  name: klavaro_results
+  type: app_closed
+- goal: take screenshot
+  name: boss_notification
+  pattern: boss|urgent|meeting
+  type: notification
+- goal: check disk space
+  name: disk_check
+  time: every 30m
+  type: time
+- goal: take screenshot
+  name: time_23:21
+  time: '23:21'
+  type: time
+- goal: take screenshot
+  name: time_23:25
+  time: '23:25'
+  type: time

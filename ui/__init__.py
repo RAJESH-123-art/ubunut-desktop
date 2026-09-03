@@ -1,6 +1,11 @@
-"""User interface modules for Desktop Automation."""
+"""
+User interface modules for Desktop Automation.
 
-from . import cli
-from . import assistant
+Imports are lazy: importing this package does NOT trigger pynput / X-server
+connection.  Access modules directly when needed:
 
-__all__ = ["cli", "assistant"]
+    from ui.assistant import main as assistant_main
+    from ui.cli import main as cli_main
+"""
+
+__all__ = ["assistant", "cli"]

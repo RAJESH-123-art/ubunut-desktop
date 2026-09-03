@@ -4,20 +4,18 @@ CLI dashboard for Linux Desktop Automation.
 List, run, inspect tasks, and view logs.
 """
 
-import json
-import time
 import argparse
-import sys
+import json
 import os
+import sys
 from pathlib import Path
-from typing import List
 
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config.config_loader import load_config, get_section
-from tasks import discover_tasks, list_tasks, task_info, get_task
 from core.system_utils import env_check
+from tasks import get_task, list_tasks, task_info
+
 
 def console_menu():
     """Interactive menu for picking actions."""
@@ -42,15 +40,22 @@ def console_menu():
                 args_input = input("Args (JSON or empty): ").strip()
                 args = json.loads(args_input) if args_input else {}
                 print(f"Running {name}...")
-                from automation import run_task
-                result = run_task(name, args)
-                print("Success" if result else "Failed")
+                mod = get_task(name)
+                if not mod:
+                    print(f"Task '{name}' not found. Use option 1 to list tasks.")
+                else:
+                    resources = mod.setup()
+                    try:
+                        result = mod.execute(args, resources)
+                    finally:
+                        mod.cleanup(resources)
+                    print("Success" if result else "Failed")
             elif choice == "3":
                 wf_name = input("Workflow name: ").strip()
                 wf_file = input("Workflow file (defaults config/workflow.yaml) or empty: ").strip() or "config/workflow.yaml"
                 print(f"Running workflow {wf_name} from {wf_file}...")
-                from automation import run_workflow
-                result = run_workflow(wf_name, wf_file)
+                from core.workflow_engine import WorkflowEngine
+                result = WorkflowEngine().run(wf_name, wf_file)
                 print("Workflow finished" if result else "Workflow failed")
             elif choice == "4":
                 print("\nEnvironment / capabilities:")

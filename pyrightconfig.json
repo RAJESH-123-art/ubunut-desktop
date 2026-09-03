@@ -1,0 +1,34 @@
+{
+  "typeCheckingMode": "standard",
+  "pythonVersion": "3.12",
+  "venvPath": ".",
+  "venv": ".venv",
+  "exclude": [
+    ".venv",
+    "venv",
+    "__pycache__"
+  ],
+
+  "reportMissingModuleSource": false,
+
+  "reportUnknownVariableType":  false,
+  "reportUnknownMemberType":    false,
+  "reportUnknownParameterType": false,
+  "reportUnknownArgumentType":  false,
+  "reportUnknownLambdaType":    false,
+
+  "reportMissingTypeArgument":  false,
+
+  "reportAny": false,
+
+  "reportPossiblyUnbound": false,
+
+  "reportReturnType": "warning",
+
+  "reportOperatorIssue": "warning",
+  "reportAttributeAccessIssue": "warning",
+  "reportIndexIssue": "warning",
+  "reportCallIssue": "warning",
+
+  "reportDeprecated": "none"
+}

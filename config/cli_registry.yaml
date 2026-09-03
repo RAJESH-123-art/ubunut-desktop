@@ -1,0 +1,199 @@
+# CLI Registry — Layer 1 of the layered automation architecture
+# (see ARCHITECTURE_EVOLUTION.md and TASK_KNOWLEDGE_BASE.md Part 4/6)
+#
+# Format: a list of entries, each with:
+#   name:     unique id (used in logs)
+#   match:    regex tried against the user's raw command (case-insensitive).
+#             Named capture groups (?P<param>...) become {param} placeholders
+#             usable in `command`. Values captured from user text are
+#             shell-quoted automatically before substitution.
+#   command:  shell command template, formatted with extracted params +
+#             defaults.
+#   defaults: optional static params (NOT quoted — trusted, from this file).
+#   fallback: optional secondary shell command tried if `command` fails.
+#   timeout:  optional seconds before giving up (default 20).
+#
+# NOTE: this registry intentionally does NOT duplicate tasks that already
+# have dedicated, tested task files with proper fallback chains (volume,
+# brightness, screenshot, power, lock, folder create/delete — see
+# tasks/*.py). It focuses on genuinely NEW coverage: the categories from
+# ARCHITECTURE_EVOLUTION.md that previously had no handler at all and fell
+# through to universal_fallback's blind binary-guessing.
+
+entries:
+  # ── System info ─────────────────────────────────────────────────────────
+  - name: system_info_full
+    match: '(?:collect|gather|get|show|dump)\s+(?:system|ubuntu|linux)?\s*(?:info|information|report|specs?|details?)\s*(?:and\s*(?:save|write|output))?\s*(?:to\s+(?P<output>\S+))?'
+    command: |
+      bash -c '
+      {
+        echo "=== SYSTEM INFORMATION REPORT ==="
+        echo "Generated: $(date)"
+        echo ""
+        echo "--- Ubuntu Version ---"
+        lsb_release -a 2>/dev/null | grep -E "Description|Release|Codename" | sed "s/^/  /"
+        echo ""
+        echo "--- Kernel Version ---"
+        echo "  $(uname -r)"
+        echo ""
+        echo "--- CPU Model ---"
+        lscpu | grep "Model name" | sed "s/.*: *//; s/^/  /"
+        echo ""
+        echo "--- RAM Capacity ---"
+        free -h | grep Mem | awk "{print \"  Total: \" $2 \"; Used: \" $3 \"; Free: \" $4 \"; Available: \" $7}"
+        echo ""
+        echo "--- GPU Model ---"
+        if command -v nvidia-smi >/dev/null 2>&1; then
+          nvidia-smi --query-gpu=name,memory.total --format=csv,noheader | sed "s/^/  /"
+        elif command -v lspci >/dev/null 2>&1; then
+          lspci | grep -i vga | sed "s/^/  /"
+        else
+          echo "  Not detected"
+        fi
+        echo ""
+        echo "--- Disk Capacity ---"
+        df -h / | awk "NR==2 {print \"  Root: \" $3 \"/\" $2 \" (\" $5 \" used)\"}"
+        df -h /home 2>/dev/null | awk "NR==2 {print \"  Home: \" $3 \"/\" $2 \" (\" $5 \" used)\"}"
+        echo ""
+        echo "--- Display Resolution ---"
+        if command -v xrandr >/dev/null 2>&1; then
+          xrandr | grep '\*' | sed "s/^/  /"
+        elif command -v wlr-randr >/dev/null 2>&1; then
+          wlr-randr | grep -E '^[^ ]' | sed "s/^/  /"
+        else
+          echo "  Could not detect (Wayland?)"
+        fi
+        echo ""
+        echo "=== END REPORT ==="
+      } > {output}
+      echo "System info saved to {output}"
+    defaults:
+      output: "/tmp/system_info.txt"
+
+  - name: check_disk
+    match: '\b(?:check|show)?\s*disk\s*(?:space|usage)\b'
+    command: "df -h"
+
+  - name: check_memory
+    match: '\b(?:check|show)?\s*(?:memory|ram)\s*(?:usage|free)?\b'
+    command: "free -h"
+
+  - name: check_cpu
+    match: '\b(?:check|show)\s*cpu\b'
+    command: "top -bn1 | head -20"
+
+  - name: check_temp
+    match: '\b(?:check|show)\s*temp(?:erature)?\b'
+    command: "sensors"
+
+  - name: list_usb
+    match: '\blist\s*usb\b'
+    command: "lsusb"
+
+  - name: list_bluetooth
+    match: '\blist\s*bluetooth\b'
+    command: "bluetoothctl devices"
+
+  - name: show_ip
+    match: '\bshow\s*(?:ip|ip\s*address)\b'
+    command: "ip addr show"
+
+  - name: list_wifi
+    match: '\blist\s*wifi\b'
+    command: "nmcli device wifi list"
+
+  - name: sync_time
+    match: '\bsync\s*time\b'
+    command: "timedatectl set-ntp true"
+
+  - name: empty_trash
+    match: '\bempty\s*trash\b'
+    command: "gio trash --empty"
+
+  - name: check_running_apps
+    match: '\b(?:check|list|show)\s*running\s*(?:apps|processes)\b'
+    command: "pgrep -a -l"
+
+  # ── File / archive operations ───────────────────────────────────────────
+  - name: compress_folder
+    match: '\bcompress\s+(?:the\s+)?folder\s+(?P<folder>[\w./-]+)'
+    command: "zip -r {folder}.zip {folder}"
+
+  - name: extract_zip
+    match: '\bextract\s+(?P<file>[\w./-]+\.zip)'
+    command: "unzip {file} -d {file}_extracted"
+
+  - name: extract_tar
+    match: '\bextract\s+(?P<file>[\w./-]+\.(?:tar|tar\.gz|tgz))'
+    command: "tar -xf {file}"
+
+  - name: find_large_files
+    match: '\bfind\s+large\s+files(?:\s+(?:in|under)\s+(?P<path>[\w./~-]+))?'
+    command: "find {path} -size +100M -type f"
+    defaults:
+      path: "."
+
+  - name: count_files
+    match: '\bcount\s+files(?:\s+(?:in|under)\s+(?P<path>[\w./~-]+))?'
+    command: "find {path} -type f | wc -l"
+    defaults:
+      path: "."
+
+  - name: list_files_by_size
+    match: '\blist\s+files\s+by\s+size(?:\s+(?:in|under)\s+(?P<path>[\w./~-]+))?'
+    command: "du -sh {path}/* | sort -h"
+    defaults:
+      path: "."
+
+  # ── Media ────────────────────────────────────────────────────────────────
+  - name: play_video
+    match: '\bplay\s+(?:video\s+)?(?P<file>[\w./~ -]+\.(?:mp4|mkv|webm|avi|mov))'
+    command: "mpv {file}"
+    fallback: "vlc {file}"
+
+  - name: play_audio
+    match: '\bplay\s+(?:audio\s+)?(?P<file>[\w./~ -]+\.(?:mp3|wav|flac|ogg|m4a))'
+    command: "mpv --no-video {file}"
+    fallback: "vlc --intf dummy {file}"
+
+  - name: extract_audio
+    match: '\bextract\s+audio\s+(?:from\s+)?(?P<video>[\w./~ -]+\.(?:mp4|mkv|webm|avi|mov))'
+    command: "ffmpeg -y -i {video} -vn -acodec copy {video}.audio.m4a"
+
+  - name: merge_pdfs
+    match: '\bmerge\s+pdfs?\s+(?:in\s+)?(?P<folder>[\w./~-]+)'
+    command: "pdfunite {folder}/*.pdf {folder}/merged.pdf"
+
+  # ── Text processing ─────────────────────────────────────────────────────
+  - name: count_words
+    match: '\bcount\s+words\s+(?:in\s+)?(?P<file>[\w./~ -]+)'
+    command: "wc -w {file}"
+
+  - name: count_lines
+    match: '\bcount\s+lines\s+(?:in\s+)?(?P<file>[\w./~ -]+)'
+    command: "wc -l {file}"
+
+  - name: search_in_file
+    match: "\\bsearch\\s+(?:for\\s+)?['\"]?(?P<pattern>[\\w -]+)['\"]?\\s+in\\s+(?P<file>[\\w./~-]+)"
+    command: "grep -n '{pattern}' {file}"
+
+  - name: sort_file
+    match: '\bsort\s+(?:file\s+)?(?P<file>[\w./~-]+)'
+    command: "sort {file} -o {file}"
+
+  - name: remove_duplicates
+    match: '\bremove\s+duplicates?\s+(?:in|from)\s+(?P<file>[\w./~-]+)'
+    command: "sort -u {file} -o {file}"
+
+  # ── Network ──────────────────────────────────────────────────────────────
+  - name: check_port
+    match: '\bcheck\s+port\s+(?P<port>\d+)\s+(?:on\s+)?(?P<host>[\w.-]+)'
+    command: "nmap -p {port} {host}"
+
+  - name: download_file
+    match: '\bdownload\s+(?P<url>https?://\S+)'
+    command: "wget -P ~/Downloads {url}"
+
+  - name: check_ssl
+    match: '\bcheck\s+ssl\s+(?:for\s+|on\s+)?(?P<host>[\w.-]+)'
+    command: "echo | openssl s_client -connect {host}:443 2>/dev/null | openssl x509 -noout -dates"

@@ -1,76 +1,112 @@
 """
-Folder operations task: open, navigate to, create folders.
+Folder operations — open, create, delete.
+
+Decision flow (Klavaro pattern):
+  1. Sanity-check all args (non-empty name + valid operation)
+  2. For open/delete: verify folder EXISTS first (abort if not)
+  3. Perform the operation
+  4. Verify the operation succeeded (folder gone / folder present)
+  5. Abort with clear message if post-verify fails
+
+Args:
+    operation (str): open | create | delete
+    name (str):      Folder path or well-known alias:
+                     Downloads, Documents, Pictures, Music, Videos, Desktop
 """
-
-import os
-import time
-from pathlib import Path
-from typing import Dict, Any
-from loguru import logger
+import shutil
 import subprocess
+from pathlib import Path
 
-from core.gui_controller import GUIController
-from core.logger import start, finish, notify
-from core.system_utils import open_directory, ensure_dir
-from core.browser_manager import setup_shared_resources
+from loguru import logger
 
-def setup():
-    """Initialize for folder operations."""
-    # No browser needed for folder operations
-    return setup_shared_resources(create_browser=False)
+from core.logger import finish, notify, start
+from core.safety_guard import assert_safe_to_delete
 
-def execute(args: dict, resources: dict):
-    """Perform folder operations."""
+_SPECIAL = {"downloads", "documents", "pictures", "music", "videos", "desktop"}
+
+
+def _resolve(name: str) -> Path:
+    if name.lower() in _SPECIAL:
+        return Path.home() / name.capitalize()
+    p = Path(name).expanduser()
+    return p if p.is_absolute() else Path.home() / p
+
+
+def setup() -> dict:
+    return {}
+
+
+def execute(args: dict, resources: dict) -> bool:
     task_name = "folder_operations"
     start(task_name)
     try:
-        gui = resources["gui"]
-        operation = args.get("operation", "")
-        folder_name = args.get("name", "")
-        
-        if operation == "open" or operation == "go to":
-            # Handle special folder names
-            if folder_name.lower() in ("downloads", "documents", "pictures", "music", "videos", "desktop"):
-                home = Path.home()
-                folder_path = home / folder_name.capitalize()
-            elif folder_name.startswith("/") or folder_name.startswith("~"):
-                folder_path = Path(folder_name).expanduser()
-            else:
-                # Try to resolve as relative path
-                folder_path = Path(folder_name)
-                if not folder_path.is_absolute():
-                    folder_path = Path.home() / folder_path
-            
-            # Open with the default file manager
-            open_directory(folder_path)
-            notify(f"Opened folder: {folder_path}")
-                
+        operation   = str(args.get("operation", "")).strip().lower()
+        folder_name = str(args.get("name",      "")).strip()
+
+        # ── Sanity check ──────────────────────────────────────────────────────
+        if not folder_name:
+            raise ValueError("'name' (folder path or alias) is required")
+        if not operation:
+            raise ValueError("'operation' is required: open | create | delete")
+        valid_ops = {"open", "create", "delete"}
+        if operation not in valid_ops:
+            raise ValueError(f"Unknown operation {operation!r}. Valid: {sorted(valid_ops)}")
+
+        folder_path = _resolve(folder_name)
+
+        # ── open ──────────────────────────────────────────────────────────────
+        if operation == "open":
+            if not folder_path.exists():
+                raise FileNotFoundError(f"Folder not found: {folder_path}")
+            if not folder_path.is_dir():
+                raise NotADirectoryError(f"Path is not a folder: {folder_path}")
+            subprocess.Popen(["xdg-open", str(folder_path)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            logger.info(f"✅ Opened: {folder_path}")
+            notify(f"Opened folder: {folder_path.name}")
+
+        # ── create ────────────────────────────────────────────────────────────
         elif operation == "create":
-            # Create new folder
-            if folder_name.startswith("/") or folder_name.startswith("~"):
-                folder_path = Path(folder_name).expanduser()
-            else:
-                folder_path = Path.cwd() / folder_name
-            
-            ensure_dir(folder_path)
-            logger.info(f"Created folder: {folder_path}")
-            notify(f"Folder created: {folder_path.name}")
-                
-        else:
-            logger.warning(f"Unsupported folder operation: {operation}")
-        
+            folder_path.mkdir(parents=True, exist_ok=True)
+            # Post-verify
+            if not folder_path.is_dir():
+                raise RuntimeError(f"Create appeared to succeed but folder not found: {folder_path}")
+            logger.info(f"✅ Created: {folder_path}")
+            notify(f"Created folder: {folder_path.name}")
+
+        # ── delete ────────────────────────────────────────────────────────────
+        # ── delete ──────────────────────────────────────────
+        elif operation == "delete":
+            if not folder_path.exists():
+                raise FileNotFoundError(f"Folder not found: {folder_path}")
+            if not folder_path.is_dir():
+                raise NotADirectoryError(f"Path is not a folder: {folder_path}")
+            # SAFETY: refuse to recursively delete a protected system path,
+            # the home directory itself, or anything suspiciously shallow —
+            # a misresolved `name` (e.g. "~", "/", empty-alias fallback)
+            # must never reach shutil.rmtree() unchecked. This is the most
+            # dangerous single operation in the whole task suite.
+            assert_safe_to_delete(folder_path)
+            shutil.rmtree(folder_path)
+            # Post-verify
+            if folder_path.exists():
+                raise RuntimeError(f"Delete appeared to succeed but folder still exists: {folder_path}")
+            logger.info(f"✅ Deleted: {folder_path}")
+            notify(f"Deleted folder: {folder_path.name}")
+
         finish("success", task_name)
         return True
+
     except Exception as exc:
         finish("error", task_name, err=exc)
         raise
 
-def cleanup(resources: dict):
-    """No cleanup needed."""
+
+def cleanup(resources: dict) -> None:
     pass
 
+
 if __name__ == "__main__":
-    args = {"operation": "open", "name": "Downloads"}
     r = setup()
-    execute(args, r)
+    execute({"operation": "open", "name": "Downloads"}, r)
     cleanup(r)

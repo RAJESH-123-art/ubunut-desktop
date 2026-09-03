@@ -1,32 +1,34 @@
 # Workflow definitions
-# You can define multi-task automation chains
+# Multi-task automation chains.  Run with:
+#   python agent.py --workflow <name>
 
-# Example daily tasks workflow:
+# ── Daily download cleanup ────────────────────────────────────────────────────
 daily_cleanup:
-  description: "Runs daily file tidy-ups and backups in the evening"
-  schedule: "23:00"  # HH:MM for daily run
+  description: "Organise Downloads folder by file type and remove old junk"
   tasks:
     - task: organize_downloads
       args:
+        create_subfolders:
+          Images:    ["jpg", "jpeg", "png", "gif", "webp", "bmp"]
+          Documents: ["pdf", "doc", "docx", "txt", "rtf", "odt"]
+          Archives:  ["zip", "tar", "gz", "7z", "rar"]
+          Code:      ["py", "js", "ts", "sh", "yaml", "json", "toml"]
+        move_videos: true
+        delete_junk: true
+        junk_patterns: ["*.tmp", "*.crdownload", "*.part"]
         delete_older_than_days: 30
-    - task: archive_project_screenshots
-      args:
-        source_dir: "/home/user/Pictures/Screenshots"
-        destination_dir: "/backup/screenshots"
-  on_error: "notify"  # ignore | notify | abort
+      retries: 1
+  on_error: "notify"
 
-# Example multi-step browser session
+# ── Evening browser session ───────────────────────────────────────────────────
 browser_evening:
-  description: "Open Firefox, visit a set of bookmarks, and take screenshots"
-  timeout: 120 # seconds
+  description: "Visit a set of bookmarks and take screenshots"
+  timeout: 120
   tasks:
     - task: open_browser_and_visit
       args:
         url: "https://news.ycombinator.com"
         screenshot: true
-    - task: scroll_page_down
-      args:
-        scrolls: 2
     - task: wait_seconds
       args:
         seconds: 3
@@ -36,46 +38,106 @@ browser_evening:
         screenshot: true
   on_error: "notify"
 
-# Batch processing for downloads folder:
+# ── Batch file organisation ───────────────────────────────────────────────────
 batch_process:
-  description: "Organize files by type and move dated folders"
+  description: "Organise downloads and move videos"
   tasks:
     - task: organize_downloads
       args:
         create_subfolders:
-          Images: ["jpg", "png", "gif", "webp"]
+          Images:    ["jpg", "png", "gif", "webp"]
           Documents: ["pdf", "doc", "docx", "txt"]
-          Archives: ["zip", "tar", "gz"]
+          Archives:  ["zip", "tar", "gz"]
         move_videos: true
         delete_junk: true
         junk_patterns: ["*.tmp", "*.crdownload"]
       retries: 2
+  on_error: "notify"
 
-# Observer mode - monitors for UI patterns and runs actions
-observer_mode:
-  description: "Watch screen and suggest automations (experimental)"
-  continuous: true
+# ── Install a set of apps ─────────────────────────────────────────────────────
+install_essentials:
+  description: "Install VLC, GIMP, and Inkscape"
   tasks:
-    - task: monitor_window_changes
+    - task: install_app
       args:
-        log_all: false
-        whitelist: ["firefox", "terminal"]
-    - task: suggest_automation_ops
+        app_name: "VLC"
+    - task: install_app
       args:
-        threshold: 0.8
-  on_error: "continue"
+        app_name: "GIMP"
+    - task: install_app
+      args:
+        app_name: "Inkscape"
+  on_error: "notify"
 
-# System health checks
-system_check:
-  description: "Daily system audit - disk, packages, notifications"
+# ── Window layout ─────────────────────────────────────────────────────────────
+tile_windows:
+  description: "Tile the top-4 open windows in a 2x2 grid"
   tasks:
-    - task: system_audit
+    - task: window_management
       args:
-        notify_free_space: true
-        warn_disk_usage_percent: 80
-    - task: apt_update_check
+        operation: "maximize"
+        window: "Firefox"
+    - task: wait_seconds
       args:
-        notify_only: true
-    - task: logrotate_logs
+        seconds: 1
+  on_error: "ignore"
+
+# ── Advanced test: ubuntu_agent_test project ────────────────────────────────────
+ubuntu_agent_test:
+  description: "Full project setup, system report, backup, checksum, verification"
+  on_error: "abort"
+  tasks:
+    - task: run_command
       args:
-        max_age_days: 7
+        command: "mkdir -p ~/ubuntu_agent_test/{src,backup,logs,output}"
+
+    - task: run_command
+      args:
+        command: |
+          cat > ~/ubuntu_agent_test/src/system_report.py << 'EOF'
+          import socket, platform, psutil, datetime, subprocess, os
+          hostname = socket.gethostname()
+          kernel = platform.release()
+          cpu = platform.processor() or "unknown"
+          ram = f"{psutil.virtual_memory().total // (1024**3)} GB"
+          disk = subprocess.getoutput("df -h / | awk 'NR==2 {print $3\"/\"$2}'")
+          now = datetime.datetime.now().isoformat()
+          out_path = os.path.expanduser("~/ubuntu_agent_test/output/system_report.txt")
+          with open(out_path, "w") as f:
+              f.write(f"Hostname: {hostname}\nKernel: {kernel}\nCPU: {cpu}\nRAM: {ram}\nDisk: {disk}\nDate: {now}\n")
+          print(f"Report saved to {out_path}")
+          EOF
+
+    - task: run_command
+      args:
+        command: "cd ~/ubuntu_agent_test && python3 src/system_report.py"
+
+    - task: run_command
+      args:
+        command: "test -f ~/ubuntu_agent_test/output/system_report.txt && echo 'REPORT VERIFIED' || echo 'REPORT MISSING'"
+
+    - task: run_command
+      args:
+        command: "tar -czf ~/ubuntu_agent_test/backup/project_backup.tar.gz -C ~/ubuntu_agent_test ."
+
+    - task: run_command
+      args:
+        command: "sha256sum ~/ubuntu_agent_test/backup/project_backup.tar.gz | cut -d' ' -f1 > ~/ubuntu_agent_test/logs/checksum.txt"
+
+    - task: run_command
+      args:
+        command: "cat ~/ubuntu_agent_test/logs/checksum.txt"
+
+    - task: run_command
+      args:
+        command: |
+          mkdir -p /tmp/verify_extract &&
+          tar -xzf ~/ubuntu_agent_test/backup/project_backup.tar.gz -C /tmp/verify_extract &&
+          echo "EXTRACTED FILES:" &&
+          find /tmp/verify_extract -type f | sort &&
+          echo "VERIFICATION: All files present"
+
+    - task: run_command
+      args:
+        command: "echo '=== SUCCESS SUMMARY ===' && echo 'Project: ~/ubuntu_agent_test' && echo 'Report: output/system_report.txt' && echo 'Backup: backup/project_backup.tar.gz' && echo 'Checksum: logs/checksum.txt' && echo 'All steps completed successfully!'"
+  on_error: "abort"

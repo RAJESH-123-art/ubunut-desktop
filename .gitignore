@@ -31,12 +31,18 @@ logs/screenshots/*.png
 .DS_Store
 Thumbs.db
 
-# Credentials
+# Credentials & secrets
 *.key
 *.pem
+.env
 config/secrets.yaml
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+
+# Runtime-generated output (not source code)
+logs/*.png
+ui_mapping_data/
+ui_mapping_data_advanced/

@@ -1,0 +1,37 @@
+[lint]
+# Rules appropriate for a desktop-automation project that intentionally uses:
+#  - broad Exception catching (to avoid crashes mid-automation)
+#  - dynamic module loading (task registry)
+#  - unannotated callback parameters (closures in agent.py)
+
+ignore = [
+  # Broad exception catching is intentional — automation must not crash mid-task
+  "BLE001",  # Do not catch blind exception: `Exception`
+  "PERF203", # try-except in loop
+
+  # Deprecated typing aliases (Dict, List, Optional) — suppress until fully migrated
+  "UP006",   # Use `dict` instead of `Dict`
+  "UP007",   # Use `X | Y` instead of `Optional[X]`
+  "UP035",   # Import from `typing` instead of `collections.abc`
+
+  # Missing annotations on dynamic callbacks / inner closures
+  "ANN",
+
+  # argparse return values intentionally ignored
+  "RET",
+
+  # print() is used intentionally for CLI output
+  "T201",
+
+  # shell=True is intentional in system_utils
+  "S602", "S603", "S605",
+
+  # sys.path.insert before local imports is necessary when running scripts directly
+  "E402",
+]
+
+[lint.per-file-ignores]
+# Test / demo stubs — not production code
+"demo.sh" = ["ALL"]
+# Config files use broad patterns
+"config/*" = ["S101"]

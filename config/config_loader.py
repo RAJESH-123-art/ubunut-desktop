@@ -6,28 +6,28 @@ import os
 import os.path
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional, Mapping
+from typing import Any, Dict, Mapping
 
 import yaml
 from loguru import logger
 
 _env_placeholder_pattern = re.compile(r"\$\{([^}]+)\}")
 
-def _expand_envs(text: str, env: Optional[Mapping[str, str]] = None) -> str:
+def _expand_envs(text: str, env: Mapping[str, str] | None = None) -> str:
     """Replace ${VAR} placeholders with values from environ or custom env map."""
     if not isinstance(text, str):
         return text
     envmap = env or os.environ
-    
+
     def repl(match):
         key = match.group(1)
         if key in envmap:
             return str(envmap[key])
         return match.group(0)
-    
+
     return _env_placeholder_pattern.sub(repl, text)
 
-def _expand(mapping: Any, env: Optional[Mapping[str, str]] = None) -> Any:
+def _expand(mapping: Any, env: Mapping[str, str] | None = None) -> Any:
     """Recursively expand ${VAR} placeholders in strings, dicts, lists."""
     if isinstance(mapping, dict):
         return {k: _expand(v, env) for k, v in mapping.items()}
@@ -39,9 +39,9 @@ def _expand(mapping: Any, env: Optional[Mapping[str, str]] = None) -> Any:
         return mapping
 
 def load_config(
-    path: Optional[str] = None,
-    defaults: Optional[Dict[str, Any]] = None,
-    env: Optional[Mapping[str, str]] = None,
+    path: str | None = None,
+    defaults: Dict[str, Any] | None = None,
+    env: Mapping[str, str] | None = None,
 ) -> Dict[str, Any]:
     """Load config YAML, substituting env vars, and merging defaults."""
     if path is None:
@@ -57,14 +57,14 @@ def load_config(
                 break
         if not path:
             raise FileNotFoundError("No config file found and AUTOMATION_CONFIG not set.")
-    
+
     # Read YAML
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    
+
     # Expand env vars
     data = _expand(data, env or os.environ)
-    
+
     # Apply defaults if any
     if defaults:
         merged = defaults.copy()
@@ -75,11 +75,11 @@ def load_config(
             else:
                 merged[k] = v
         data = merged
-    
+
     logger.info(f"Loaded config from {path}")
     return data
 
-def get_section(section: str, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def get_section(section: str, config: Dict[str, Any] | None = None) -> Dict[str, Any]:
     """Convenient fetcher for top-level config section."""
     if config is None:
         config = load_config()
