@@ -26,7 +26,11 @@ How it works (zero AI):
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from core.session import Session
+    from core.task_dag import TaskDAG
 
 from loguru import logger
 
@@ -730,6 +734,79 @@ def run_command(raw: str) -> bool:
     return overall
 
 
+def _run_goal_dag(dag: "TaskDAG", session: "Session") -> dict:
+    """
+    Run a TaskDAG via ParallelRunner while persisting progress to `session`
+    so an interrupted run can be resumed later with `agent.py --resume <id>`
+    instead of starting the whole goal over. Autosaves periodically during
+    the run (not just at the end) so a crash -- not just a clean Ctrl+C --
+    still leaves a resumable session behind.
+    """
+    import threading
+
+    from core.parallel_runner import ParallelRunner
+
+    def executor_builder(intent: str, task_args: dict):
+        from core.smart_parser import ParsedIntent
+        intent_obj = ParsedIntent(
+            intent=intent,
+            params=task_args,
+            confidence=1.0,
+            raw_input=str(task_args),
+            normalized_input=str(task_args),
+        )
+        executor, exec_args, resources = _build_executor(intent_obj)
+        def fn(a, r):
+            return executor.run(a, r)
+        return fn, exec_args, resources
+
+    runner = ParallelRunner(max_workers=4, executor_builder=executor_builder)
+
+    stop_autosave = threading.Event()
+
+    def _autosave_loop() -> None:
+        while not stop_autosave.wait(3.0):
+            session.capture_dag(dag)
+            session.save()
+
+    autosave_thread = threading.Thread(target=_autosave_loop, daemon=True)
+    autosave_thread.start()
+
+    session.log("started", goal=session.goal)
+    session.capture_dag(dag)
+    session.save()
+    print(f"Session: {session.id}  (resume anytime with: agent.py --resume {session.id})")
+
+    try:
+        summary = runner.run(dag)
+    except KeyboardInterrupt:
+        stop_autosave.set()
+        session.capture_dag(dag)
+        session.status = "stopped"
+        session.log("interrupted")
+        session.save()
+        print(f"\nInterrupted -- progress saved. Resume with: agent.py --resume {session.id}")
+        sys.exit(130)
+    except Exception as exc:
+        stop_autosave.set()
+        session.capture_dag(dag)
+        session.status = "failed"
+        session.log("exception", error=str(exc))
+        session.save()
+        raise
+    finally:
+        stop_autosave.set()
+
+    session.capture_dag(dag)
+    session.status = "done" if summary.get("failed", 0) == 0 else "failed"
+    session.log("finished", summary=summary)
+    session.save()
+    print(f"\nGoal complete: {summary}")
+    if summary.get("failed", 0):
+        print(f"Some steps failed -- resume with: agent.py --resume {session.id}")
+    return summary
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # CLI
 # ─────────────────────────────────────────────────────────────────────────────
@@ -752,6 +829,11 @@ def main() -> None:
                         help="High-level goal — auto-planned and parallel-executed")
     parser.add_argument("--parallel", action="store_true",
                         help="Run compound command tasks in parallel")
+    # Resumable Sessions (goal-driven DAG runs persist progress and can resume)
+    parser.add_argument("--resume", metavar="SESSION_ID",
+                        help="Resume a previously interrupted --goal run by session id")
+    parser.add_argument("--sessions", action="store_true",
+                        help="List saved sessions (id, progress, goal)")
     # Phase 3: Daemon + Event Triggers
     parser.add_argument("--daemon", action="store_true",
                         help="Start background daemon (24/7 reactive automation)")
@@ -815,30 +897,37 @@ def main() -> None:
             print(f"  • {t['name']} ({t['type']}) → {t['goal']} [cooldown={t['cooldown']}s]")
         return
 
+    # Sessions: list or resume
+    if args.sessions:
+        from core.session import Session
+        sessions = Session.list_all()
+        if not sessions:
+            print("No saved sessions.")
+        else:
+            print(f"\n{len(sessions)} saved session(s):")
+            for s in sessions:
+                print(f"  {s.summary()}")
+            print("\nResume one with: agent.py --resume <id>")
+        return
+
+    if args.resume:
+        from core.session import Session
+        session = Session.load(args.resume)
+        if session is None:
+            print(f"No session found with id {args.resume!r}. Use --sessions to list them.")
+            sys.exit(1)
+        print(f"\nResuming session {session.id} -- {session.summary()}")
+        dag = session.to_dag()
+        summary = _run_goal_dag(dag, session)
+        sys.exit(0 if summary['failed'] == 0 else 1)
+
     # Phase 2: Goal planner handler
     if args.goal:
         from core.goal_planner import goal_planner
-        from core.parallel_runner import ParallelRunner
+        from core.session import Session
         dag = goal_planner.plan(args.goal)
-
-        # Build executor builder for parallel runner
-        def executor_builder(intent: str, task_args: dict):
-            from core.smart_parser import ParsedIntent
-            intent_obj = ParsedIntent(
-                intent=intent,
-                params=task_args,
-                confidence=1.0,
-                raw_input=str(task_args),
-                normalized_input=str(task_args),
-            )
-            executor, exec_args, resources = _build_executor(intent_obj)
-            def fn(a, r):
-                return executor.run(a, r)
-            return fn, exec_args, resources
-
-        runner = ParallelRunner(max_workers=4, executor_builder=executor_builder)
-        summary = runner.run(dag)
-        print(f"\nGoal complete: {summary}")
+        session = Session.new(args.goal)
+        summary = _run_goal_dag(dag, session)
         sys.exit(0 if summary['failed'] == 0 else 1)
 
     if args.command:
