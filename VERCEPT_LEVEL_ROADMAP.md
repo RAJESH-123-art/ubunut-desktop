@@ -51,7 +51,7 @@ it may be ahead.** The real gaps are elsewhere (see below).
 | **Frontier Agents (adaptive, closed-loop)** | `core/action_loop.py` (NEW this session) | 🟡 **Built, partially tested, HAS KNOWN BUGS — see §3** |
 | **Blueprints (reusable/testable workflow blocks)** | `core/task_dag.py` + `core/goal_planner.py` + `core/parallel_runner.py` | ⚠️ Engine exists (DAG, parallel exec, `GOAL_TEMPLATES`), authoring/testing UX does NOT |
 | **Opt-in rich user memory** | `core/memory.py` | ❌ Only stores strategy success/failure stats, not user profile/credentials/preferences |
-| **Resumable Sessions** | *(nothing)* | ❌ Total gap — every `agent.py` invocation is stateless |
+| **Resumable Sessions** | `core/session.py` + `agent.py --goal/--resume/--sessions` | ✅ Built, live-tested (see §4.5) — only covers `--goal` DAG runs, not plain single-command `run_command()` calls |
 
 ---
 
@@ -202,6 +202,24 @@ notable ones if a different speed/quality tradeoff is needed later:
 - Committed to git (previously 100 files were uncommitted with no git identity
   configured -- both fixed: repo-local `user.name`/`user.email` set, all work
   committed across two commits).
+
+## 4.6. UPDATE — Resumable Sessions built
+
+- `core/session.py`: `Session` dataclass persists a goal-driven run's `TaskDAG` node
+  states + event log to `~/.config/desktop_automation/sessions/<id>.json`.
+- `agent.py --goal "..."` now creates a session and autosaves progress every 3s while
+  the DAG runs (survives a crash, not just clean Ctrl+C).
+- `agent.py --resume <id>` reconstructs the DAG from the saved session and re-runs
+  only what's left -- "done" nodes are skipped, not repeated.
+- `agent.py --sessions` lists saved sessions with progress and goal text.
+- **Verified live**: ran a real `--goal` (screenshot + disk-usage check), confirmed
+  both nodes recorded as done. Separately constructed a session with one done node
+  + one pending node (simulating a mid-run crash) and confirmed `--resume` submitted
+  ONLY the pending node.
+- **Known limitation**: only wired into the `--goal` (DAG) path. A plain
+  `agent.py "<command>"` call (single/compound intents via `run_command()`, not the
+  DAG planner) still has no session/resume support -- if that's needed later, it
+  would need its own lighter-weight session hook in `run_command()`.
 
 ## 5. IMMEDIATE NEXT STEPS (priority order for the next session)
 
