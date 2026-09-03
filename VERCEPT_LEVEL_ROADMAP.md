@@ -48,7 +48,7 @@ it may be ahead.** The real gaps are elsewhere (see below).
 | Intent Parser (LLM) | `core/smart_parser.py` (fast/free) + `core/llm_planner.py` (Tier 5, upfront script generation) | ✅ Built, live-tested, works |
 | Vision-first perception | `core/semantic_vision.py` (Layer 4, one-shot) | ✅ Built, live-tested, works — but one-shot, not a loop |
 | **Context Monitor (continuous)** | `core/world_model.py` | ⚠️ Query-on-demand, not a continuously running watcher |
-| **Frontier Agents (adaptive, closed-loop)** | `core/action_loop.py` (NEW this session) | 🟡 **Built, partially tested, HAS KNOWN BUGS — see §3** |
+| **Frontier Agents (adaptive, closed-loop)** | `core/action_loop.py`, now wired into `tasks/universal_fallback.py` (Layer 5) | ✅ Built, verification-gated, and reachable from the real pipeline (see §4.7) |
 | **Blueprints (reusable/testable workflow blocks)** | `core/task_dag.py` + `core/goal_planner.py` + `core/parallel_runner.py` | ⚠️ Engine exists (DAG, parallel exec, `GOAL_TEMPLATES`), authoring/testing UX does NOT |
 | **Opt-in rich user memory** | `core/memory.py` | ❌ Only stores strategy success/failure stats, not user profile/credentials/preferences |
 | **Resumable Sessions** | `core/session.py` + `agent.py --goal/--resume/--sessions` | ✅ Built, live-tested (see §4.5) — only covers `--goal` DAG runs, not plain single-command `run_command()` calls |
@@ -220,6 +220,43 @@ notable ones if a different speed/quality tradeoff is needed later:
   `agent.py "<command>"` call (single/compound intents via `run_command()`, not the
   DAG planner) still has no session/resume support -- if that's needed later, it
   would need its own lighter-weight session hook in `run_command()`.
+
+## 4.7. UPDATE — action_loop.py was dead code; now wired in
+
+**Important finding**: `core/action_loop.py` (the generic, no-task-file-needed,
+multi-step closed loop -- the actual answer to "can any task be attempted without
+writing a new .py file?") was fully built and unit-tested but was **never imported
+anywhere outside its own file**. Nothing in `agent.py` or `tasks/universal_fallback.py`
+ever called it. From a real user's perspective it was completely dead code.
+
+Fixed:
+- `tasks/universal_fallback.py` now has a Layer 5 that calls `action_loop.run()` after
+  the one-shot `semantic_vision` click (Layer 4) fails and before blind binary-guessing.
+- `core/llm_planner.py`'s `looks_unreliable()` now also returns `True` for zero
+  SmartParser intents (previously a totally unparseable command skipped the AI planner
+  entirely and went straight to weak fallback heuristics).
+- `agent.py run_command()`: a *failed* upfront AI script no longer short-circuits the
+  whole command -- only a *successful* one does. A failed plan now continues on to
+  `universal_fallback`'s remaining layers (including the new adaptive loop) instead of
+  giving up after one attempt.
+
+**Honest scope of this fix**: this makes the capability to *attempt* any task generically
+(no dedicated task file) actually reachable. It does **not** make arbitrary/advanced
+multi-step tasks succeed on the first try reliably -- no agent, including Vercept's own
+Vy (confirmed via research this session: Vy is screenshot-based, often slower than a
+human, and its own CEO describes "mixed results"), achieves guaranteed first-attempt
+success on genuinely novel GUI work. First-attempt reliability is improved by (a) the
+verification gate in §4.5/4.6 so failures are honestly reported instead of hallucinated
+as success, and (b) the DAG-level self-healing already in `core/replanner.py`, but
+there is no silver bullet here for any agent architecture, ours included.
+
+**Also note**: this Layer 5 path is currently only reachable through
+`tasks/universal_fallback.py`, i.e. after SmartParser/cli_registry/AT-SPI
+navigator/Electron navigator/semantic_vision all fail to match. `goal_planner.py`'s
+multi-step DAG builder still only creates nodes from known SmartParser intents --
+it does NOT yet have a generic "adaptive loop" node type for steps that don't match
+any known intent within a larger multi-step goal. That would be a natural next
+extension if multi-step goals with individually-novel steps become a real need.
 
 ## 5. IMMEDIATE NEXT STEPS (priority order for the next session)
 
