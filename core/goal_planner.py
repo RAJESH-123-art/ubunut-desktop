@@ -128,6 +128,27 @@ class GoalPlanner:
 
         return dag
 
+    def dag_from_steps(self, steps: List[Dict[str, Any]]) -> TaskDAG:
+        """
+        Build a TaskDAG directly from a list of already-concrete
+        {"intent": ..., "args": {...}} steps -- no placeholder substitution,
+        no template lookup. Used by core/blueprint.py to replay a
+        previously-saved blueprint whose steps already have real values
+        baked in (captured at save time via SmartParser), unlike
+        GOAL_TEMPLATES' `{placeholder}` strings which need a fresh raw_goal
+        to fill in each time.
+        """
+        dag = TaskDAG()
+        for i, step in enumerate(steps):
+            node = TaskNode(
+                id=f"{step['intent']}_{i}_{uuid.uuid4().hex[:6]}",
+                intent=step["intent"],
+                args=step.get("args", {}) or {},
+                deps=[],
+            )
+            dag.add(node)
+        return dag
+
     def _build_dag_from_template(
         self, 
         task_list: List[Dict], 

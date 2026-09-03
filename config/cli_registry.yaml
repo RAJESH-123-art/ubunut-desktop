@@ -197,3 +197,85 @@ entries:
   - name: check_ssl
     match: '\bcheck\s+ssl\s+(?:for\s+|on\s+)?(?P<host>[\w.-]+)'
     command: "echo | openssl s_client -connect {host}:443 2>/dev/null | openssl x509 -noout -dates"
+
+  - name: ping_host
+    match: '\bping\s+(?P<host>[\w.-]+)'
+    command: "ping -c 4 {host}"
+
+  - name: my_public_ip
+    match: '\b(?:show|check|what.?s)\s+my\s+(?:public|external)\s+ip\b'
+    command: "curl -s --max-time 5 ifconfig.me"
+    fallback: "curl -s --max-time 5 icanhazip.com"
+
+  # ── Clipboard ──────────────────────────────────────────────────────────────────
+  - name: show_clipboard
+    match: '\b(?:show|get|check)\s+(?:the\s+)?clipboard\b'
+    command: "wl-paste 2>/dev/null"
+    fallback: "xclip -selection clipboard -o 2>/dev/null"
+
+  - name: copy_to_clipboard
+    match: '\bcopy\s+(?P<text>.+?)\s+to\s+(?:the\s+)?clipboard\b'
+    command: "printf '%s' {text} | wl-copy"
+    fallback: "printf '%s' {text} | xclip -selection clipboard"
+
+  # ── Battery / power info (read-only ─ system_power.py handles actual shutdown/restart/suspend) ──
+  - name: check_battery
+    match: '\b(?:check|show)\s+battery\b'
+    command: |
+      bash -c '
+      bat=$(upower -e 2>/dev/null | grep -i battery | head -1)
+      if [ -n "$bat" ]; then upower -i "$bat" | grep -E "state|percentage|time to"; else echo "No battery detected"; fi
+      '
+
+  - name: show_uptime
+    match: '\b(?:show|check)\s+uptime\b'
+    command: "uptime -p"
+
+  - name: show_datetime
+    match: '\b(?:show|what.?s)\s+(?:the\s+)?(?:current\s+)?(?:date|time)\b'
+    command: "date \"+%A, %B %d %Y  %H:%M:%S\""
+
+  # ── Process management (read-only listing only ─ no kill, to stay safe by default) ──
+  - name: top_cpu_processes
+    match: '\b(?:top|show)\s+(?:processes\s+by\s+)?cpu\b'
+    command: "ps aux --sort=-%cpu | head -11"
+
+  - name: top_memory_processes
+    match: '\b(?:top|show)\s+(?:processes\s+by\s+)?(?:memory|ram)\s+(?:usage\s+)?processes\b|\btop\s+memory\b'
+    command: "ps aux --sort=-%mem | head -11"
+
+  # ── Package updates (read-only ─ does not install/upgrade anything) ─────────────
+  - name: check_updates
+    match: '\b(?:check|list|show)\s+(?:for\s+)?(?:updates|upgradable\s+packages)\b'
+    command: "apt list --upgradable 2>/dev/null | tail -n +2"
+
+  # ── Appearance (GNOME) ────────────────────────────────────────────────────
+  - name: enable_dark_mode
+    match: '\b(?:enable|turn\s+on|switch\s+to)\s+dark\s+mode\b'
+    command: "gsettings set org.gnome.desktop.interface color-scheme prefer-dark"
+
+  - name: disable_dark_mode
+    match: '\b(?:disable|turn\s+off|switch\s+to)\s+light\s+mode\b|\bdisable\s+dark\s+mode\b'
+    command: "gsettings set org.gnome.desktop.interface color-scheme default"
+
+  # ── Git (read-only status ─ no commit/push automation here) ──────────────────
+  - name: git_status
+    match: '\bgit\s+status\b(?:\s+(?:in|for|of)\s+(?P<path>[\w./~-]+))?'
+    command: "git -C {path} status"
+    defaults:
+      path: "."
+
+  # ── Quick notes (plain-text file, no external app needed) ────────────────
+  - name: add_note
+    match: '\b(?:add|save|take)\s+(?:a\s+)?note[:\s]+(?P<text>.+)'
+    command: "echo {text} >> ~/notes.txt && echo 'Note saved to ~/notes.txt'"
+
+  - name: show_notes
+    match: '\b(?:show|list|read)\s+(?:my\s+)?notes\b'
+    command: "cat ~/notes.txt"
+    fallback: "echo 'No notes yet'"
+
+  # ── Recent files ─────────────────────────────────────────────────────────────
+  - name: show_recent_downloads
+    match: '\b(?:show|list)\s+recent\s+downloads\b'
+    command: "find ~/Downloads -maxdepth 1 -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -10 | cut -d' ' -f2-"

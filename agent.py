@@ -842,6 +842,17 @@ def main() -> None:
                         help="Resume a previously interrupted --goal run by session id")
     parser.add_argument("--sessions", action="store_true",
                         help="List saved sessions (id, progress, goal)")
+    # Blueprints (named, saved, reusable multi-step workflows on top of --goal)
+    parser.add_argument("--save-blueprint", metavar="NAME",
+                        help="Save the --goal as a named, reusable blueprint (also runs it once)")
+    parser.add_argument("--run-blueprint", metavar="NAME",
+                        help="Run a previously saved blueprint by name")
+    parser.add_argument("--test-blueprint", metavar="NAME",
+                        help="Run each step of a saved blueprint independently and report per-step results")
+    parser.add_argument("--blueprints", action="store_true",
+                        help="List saved blueprints")
+    parser.add_argument("--delete-blueprint", metavar="NAME",
+                        help="Delete a saved blueprint")
     # Phase 3: Daemon + Event Triggers
     parser.add_argument("--daemon", action="store_true",
                         help="Start background daemon (24/7 reactive automation)")
@@ -929,11 +940,79 @@ def main() -> None:
         summary = _run_goal_dag(dag, session)
         sys.exit(0 if summary['failed'] == 0 else 1)
 
+    # Blueprints: list, delete, test, or run a saved one
+    if args.blueprints:
+        from core.blueprint import Blueprint
+        bps = Blueprint.list_all()
+        if not bps:
+            print("No saved blueprints.")
+        else:
+            print(f"\n{len(bps)} saved blueprint(s):")
+            for bp in bps:
+                print(f"  {bp.summary()}")
+            print("\nRun one with: agent.py --run-blueprint <name>")
+            print("Test its steps individually with: agent.py --test-blueprint <name>")
+        return
+
+    if args.delete_blueprint:
+        from core.blueprint import Blueprint
+        bp = Blueprint.load(args.delete_blueprint)
+        if bp is None:
+            print(f"No blueprint named {args.delete_blueprint!r}. Use --blueprints to list.")
+            sys.exit(1)
+        bp.delete()
+        print(f"Deleted blueprint {args.delete_blueprint!r}.")
+        return
+
+    if args.test_blueprint:
+        from core.blueprint import Blueprint
+        from core.smart_parser import ParsedIntent
+        bp = Blueprint.load(args.test_blueprint)
+        if bp is None:
+            print(f"No blueprint named {args.test_blueprint!r}. Use --blueprints to list.")
+            sys.exit(1)
+        print(f"\nTesting blueprint {bp.name!r} -- {len(bp.steps)} step(s), each run independently:\n")
+        all_ok = True
+        for i, step in enumerate(bp.steps, 1):
+            intent_obj = ParsedIntent(
+                intent=step["intent"], params=step.get("args", {}) or {},
+                confidence=1.0, raw_input=str(step), normalized_input=str(step),
+            )
+            try:
+                executor, exec_args, resources = _build_executor(intent_obj)
+                ok = executor.run(exec_args, resources)
+            except Exception as exc:
+                ok = False
+                print(f"  [{i}/{len(bp.steps)}] {step['intent']}: EXCEPTION {exc}")
+            else:
+                print(f"  [{i}/{len(bp.steps)}] {step['intent']}: {'✅ OK' if ok else '❌ FAILED'}")
+            all_ok = all_ok and ok
+        print(f"\nBlueprint test {'passed -- all steps OK' if all_ok else 'had failures'}.")
+        sys.exit(0 if all_ok else 1)
+
+    if args.run_blueprint:
+        from core.blueprint import Blueprint
+        from core.session import Session
+        bp = Blueprint.load(args.run_blueprint)
+        if bp is None:
+            print(f"No blueprint named {args.run_blueprint!r}. Use --blueprints to list.")
+            sys.exit(1)
+        print(f"\nRunning blueprint {bp.name!r} -- {bp.summary()}")
+        dag = bp.to_dag()
+        session = Session.new(f"blueprint:{bp.name}")
+        summary = _run_goal_dag(dag, session)
+        sys.exit(0 if summary['failed'] == 0 else 1)
+
     # Phase 2: Goal planner handler
     if args.goal:
         from core.goal_planner import goal_planner
         from core.session import Session
         dag = goal_planner.plan(args.goal)
+        if args.save_blueprint:
+            from core.blueprint import Blueprint
+            bp = Blueprint.from_goal(args.save_blueprint, args.goal)
+            bp.save()
+            print(f"Saved blueprint {bp.name!r} ({len(bp.steps)} step(s)) -- rerun anytime with: agent.py --run-blueprint {bp.name}")
         session = Session.new(args.goal)
         summary = _run_goal_dag(dag, session)
         sys.exit(0 if summary['failed'] == 0 else 1)
