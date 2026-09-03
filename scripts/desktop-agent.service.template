@@ -1,0 +1,14 @@
+[Unit]
+Description=Desktop Automation Agent -- background daemon (scheduled triggers)
+After=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=__PROJECT_DIR__
+EnvironmentFile=-__PROJECT_DIR__/config/secrets.env
+ExecStart=__PYTHON__ agent.py --daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -36,6 +36,7 @@ Thumbs.db
 *.pem
 .env
 config/secrets.yaml
+config/secrets.env
 
 # Temporary files
 *.tmp
