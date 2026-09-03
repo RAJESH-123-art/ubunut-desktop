@@ -98,6 +98,14 @@ class SemanticVision:
             sys.path.insert(0, "/usr/lib/python3/dist-packages")
             
             words = description.lower().split()
+            # Destructive/window-chrome controls that a vague, fuzzy-matched
+            # description should never land on by accident -- e.g. an LLM
+            # decision like "click the equals button" must never silently hit
+            # a window's Close/Quit control instead just because of incidental
+            # substring overlap. Only allow a match here if the description
+            # explicitly asks for it as a whole word (a genuine "close the
+            # window" request still works fine).
+            _guarded_names = {"close", "quit", "exit"}
             desktop = pyatspi.Registry.getDesktop(0)
             
             best_score, best_node = 0, None
@@ -108,7 +116,7 @@ class SemanticVision:
                     return
                 try:
                     node_name = (node.name or "").lower()
-                    if node_name:
+                    if node_name and not (node_name in _guarded_names and node_name not in words):
                         score = sum(1 for w in words if w in node_name)
                         if score > best_score:
                             best_score, best_node = score, node

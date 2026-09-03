@@ -26,6 +26,14 @@ Safety:
   This module only decides WHAT to do next; it does not change HOW actions
   execute or bypass any existing safety mechanism.
 
+Trust:
+  The model's own "done"/success claim is NEVER accepted at face value.
+  _verify_done() re-observes independently before agreeing a claimed
+  success actually holds (see VERCEPT_LEVEL_ROADMAP.md §6 -- a past run
+  hallucinated success on a calculator that was actually showing a
+  malformed expression, with no real observation data behind the claim).
+  A claimed failure is trusted as-is; only claimed *success* is checked.
+
 Fully inert without NVIDIA_TEXT_API_KEY (the decision step needs it) --
 with no key, `ActionLoop.available()` is False.
 """
@@ -269,6 +277,31 @@ class ActionLoop:
             logger.debug(f"ActionLoop: focus attempt failed: {exc}")
             return False
 
+    def _verify_done(self, claimed_success: bool, app_hint: str, message: str) -> tuple[bool, str]:
+        """
+        Independent check before trusting the model's own "done" claim.
+        Never let self-reported success stand alone -- a live run once
+        hallucinated success on a calculator that actually showed a
+        malformed expression, with zero real observation data backing the
+        claim (see VERCEPT_LEVEL_ROADMAP.md §6). This re-observes fresh,
+        independently of whatever the model said, before agreeing.
+        """
+        if not claimed_success:
+            return False, message  # a claimed failure needs no extra scrutiny
+        fresh = self._observe(app_hint)
+        if not fresh or fresh.startswith("(no observation available"):
+            return False, (
+                f"UNVERIFIED (treated as failed): model claimed success ({message!r}) "
+                f"but a fresh observation immediately afterward returned nothing -- "
+                f"cannot confirm the target app is even still running."
+            )
+        if app_hint and fresh.startswith("App:") and app_hint.lower() not in fresh.splitlines()[0].lower():
+            return False, (
+                f"UNVERIFIED (treated as failed): model claimed success ({message!r}) "
+                f"but a fresh observation no longer shows {app_hint!r} running at all."
+            )
+        return True, message
+
     def _act(self, decision: dict[str, Any], app_hint: str = "") -> str:
         action = decision.get("action")
         try:
@@ -328,8 +361,11 @@ class ActionLoop:
             logger.info(f"ActionLoop[{i+1}/{self.max_steps}]: decision={decision}")
 
             if decision.get("action") == "done":
-                success = bool(decision.get("success", False))
-                message = str(decision.get("message", ""))
+                claimed_success = bool(decision.get("success", False))
+                claimed_message = str(decision.get("message", ""))
+                success, message = self._verify_done(claimed_success, app_hint, claimed_message)
+                if claimed_success and not success:
+                    logger.warning(f"ActionLoop: verification gate REJECTED a claimed success -- {message}")
                 steps.append(LoopStep(observation, decision, "loop ended"))
                 logger.info(f"ActionLoop: done (success={success}): {message}")
                 return LoopResult(success=success, message=message, steps=steps)
