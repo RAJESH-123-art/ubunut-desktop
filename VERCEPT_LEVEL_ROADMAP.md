@@ -250,13 +250,27 @@ verification gate in §4.5/4.6 so failures are honestly reported instead of hall
 as success, and (b) the DAG-level self-healing already in `core/replanner.py`, but
 there is no silver bullet here for any agent architecture, ours included.
 
-**Also note**: this Layer 5 path is currently only reachable through
-`tasks/universal_fallback.py`, i.e. after SmartParser/cli_registry/AT-SPI
-navigator/Electron navigator/semantic_vision all fail to match. `goal_planner.py`'s
-multi-step DAG builder still only creates nodes from known SmartParser intents --
-it does NOT yet have a generic "adaptive loop" node type for steps that don't match
-any known intent within a larger multi-step goal. That would be a natural next
-extension if multi-step goals with individually-novel steps become a real need.
+**CORRECTION (verified immediately after, in the next session turn)**: the claim
+above -- that `goal_planner.py`'s DAG builder has no way to reach the adaptive loop
+for a novel step inside a multi-step goal -- was WRONG, and was corrected without
+needing any new code. Traced the full chain and confirmed live:
+`smart_parser.parse_multi()` already wraps any clause that matches no known intent
+as a `ParsedIntent(intent="universal_fallback", params={"raw_command":..., "normalized":...})`
+(an existing convention from an earlier session, not new). `goal_planner.plan()`
+faithfully turns EVERY intent parse_multi returns -- including these -- into a
+DAG node. `agent.py _build_executor()`'s catch-all default branch (for any intent
+name it has no explicit handler for) routes straight to
+`tasks.universal_fallback.execute()`, which now includes the Layer 5 adaptive loop.
+Live-tested: `goal_planner.plan("take a screenshot and rearrange my desktop icons in
+a spiral pattern xyzzy")` produced a `universal_fallback` node for the second
+clause, and running that DAG for real reached the adaptive-loop code path inside
+`universal_fallback.execute()` (confirmed via log line "Adaptive loop unavailable:
+NVIDIA_TEXT_API_KEY not set" -- correctly gated, not a crash). **So multi-step goals
+with individually-novel steps already reach the adaptive loop per-step, today, with
+zero additional code.** Lesson for next session: trace existing intent-routing
+conventions fully (parse_multi's fallback-wrapping, _build_executor's catch-all)
+before assuming a capability gap exists -- this project has more already-wired
+plumbing than a single-file read reveals.
 
 ## 5. IMMEDIATE NEXT STEPS (priority order for the next session)
 
