@@ -49,7 +49,7 @@ it may be ahead.** The real gaps are elsewhere (see below).
 | Vision-first perception | `core/semantic_vision.py` (Layer 4, one-shot) | ✅ Built, live-tested, works — but one-shot, not a loop |
 | **Context Monitor (continuous)** | `core/world_model.py` | ⚠️ Query-on-demand, not a continuously running watcher |
 | **Frontier Agents (adaptive, closed-loop)** | `core/action_loop.py`, now wired into `tasks/universal_fallback.py` (Layer 5) | ✅ Built, verification-gated, and reachable from the real pipeline (see §4.7) |
-| **Blueprints (reusable/testable workflow blocks)** | `core/task_dag.py` + `core/goal_planner.py` + `core/parallel_runner.py` | ⚠️ Engine exists (DAG, parallel exec, `GOAL_TEMPLATES`), authoring/testing UX does NOT |
+| **Blueprints (reusable/testable workflow blocks)** | `core/blueprint.py` + `agent.py --save/run/test/delete-blueprint` | ✅ Built, live-tested end-to-end (see §4.8) |
 | **Opt-in rich user memory** | `core/memory.py` | ❌ Only stores strategy success/failure stats, not user profile/credentials/preferences |
 | **Resumable Sessions** | `core/session.py` + `agent.py --goal/--resume/--sessions` | ✅ Built, live-tested (see §4.5) — only covers `--goal` DAG runs, not plain single-command `run_command()` calls |
 
@@ -271,6 +271,31 @@ zero additional code.** Lesson for next session: trace existing intent-routing
 conventions fully (parse_multi's fallback-wrapping, _build_executor's catch-all)
 before assuming a capability gap exists -- this project has more already-wired
 plumbing than a single-file read reveals.
+
+## 4.8. UPDATE — grew deterministic coverage; built Blueprints
+
+- `config/cli_registry.yaml`: 30 → 46 entries. Added clipboard, battery, uptime,
+  date/time, top CPU/memory (listing only, no kill), apt upgradable-packages check
+  (read-only), GNOME dark mode on/off, git status, quick notes, public IP, ping,
+  recent downloads. Live-verified all 16 new patterns match with zero collisions
+  against the existing 30, and exercised several for real (git status, uptime,
+  date, a full add-note/show-notes round trip).
+- `core/blueprint.py` + `agent.py --save-blueprint/--run-blueprint/--test-blueprint/
+  --blueprints/--delete-blueprint`: closes the Blueprints authoring-UX gap on top of
+  the already-existing `task_dag.py`/`goal_planner.py` engine. `goal_planner.py` got
+  a new `dag_from_steps()` public method to replay a blueprint's already-concrete
+  steps without template placeholder substitution.
+- **Live-verified end-to-end**: saved a real 2-step blueprint via `--goal ... --save-blueprint`,
+  it ran successfully in the same command; `--blueprints` listed it; `--test-blueprint`
+  ran both steps independently and reported OK for both; `--run-blueprint` replayed
+  it from the saved file with no goal retyped and it completed successfully again;
+  `--delete-blueprint` removed it and `--blueprints` confirmed it was gone.
+
+**Status after this update: all 6 items from the session's priority list are done**
+(pipeline unification, action_loop.py verification gate, grown deterministic
+coverage, Resumable Sessions, Blueprints, git commits). Remaining open items are
+below in §5 (mostly smaller/lower-priority: richer opt-in memory, the Windows 11
+browser-flow polish, and Bug #5's exact root cause).
 
 ## 5. IMMEDIATE NEXT STEPS (priority order for the next session)
 
