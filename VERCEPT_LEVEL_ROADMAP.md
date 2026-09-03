@@ -167,6 +167,42 @@ notable ones if a different speed/quality tradeoff is needed later:
 
 ---
 
+## 4.5. UPDATE — follow-up session findings (action_loop.py bugs #4/#5, pipeline unification)
+
+- **Unified the two parallel pipelines.** `ui/assistant.py` and `ui/cli.py` used to
+  import the superseded `legacy/intent_parser.py` / `legacy/automation.py`, while
+  `agent.py` used the modern `smart_parser`/`StrategyExecutor` pipeline -- two different
+  "brains" that could behave differently for the same input. Both now delegate to
+  `agent.py`'s `run_command()` / `core.workflow_engine.WorkflowEngine`. The one
+  capability the old path had that the new one didn't (canva/figma/vistacreate
+  template-automation routing) was ported into `agent.py`'s `run_command()` as a
+  shortcut before retiring `legacy/` entirely (deleted, confirmed unused).
+- **Bug #4 re-investigated live, did NOT reproduce.** Ran a real gnome-calculator
+  instance, drove it via direct AT-SPI `doAction()` clicks (7, +, 3, =), and read
+  `queryText()` on the display's `[text]` node after each click: it correctly
+  tracked `7` -> `7+` -> `7+3` -> `10` the whole way. `_observe_atspi()`'s existing
+  text-content-fallback code (added in the prior session) is correct as written.
+  Conclusion: the blind-observation failure in the original run was likely a
+  symptom of Bug #5 (below), not a fundamental flaw in the text-reading approach.
+- **Bug #5 re-investigated live, DID reproduce.** The gnome-calculator process
+  disappeared entirely (absent from both `pgrep` and the AT-SPI desktop list)
+  during testing. Root cause not conclusively isolated, but a real, plausible
+  mechanism was found and fixed: `semantic_vision.find_by_atspi()`'s fuzzy
+  word-overlap matching had **zero protection** against a vague/mismatched
+  description accidentally landing on a window's Close/Quit control. Fixed --
+  those controls are now skipped unless the description explicitly asks for them
+  by that exact word (a genuine "close the window" request still works).
+- **Implemented the verification gate (priority #2 below).** `action_loop.py` no
+  longer trusts a model's own `"done"`/`success` claim at face value.
+  `_verify_done()` re-observes fresh before agreeing; if the target app can no
+  longer be observed/found at all, a claimed success is downgraded to failed with
+  a clear reason. This is the fix that actually matters regardless of what caused
+  any individual blind-observation incident -- it prevents the loop from ever
+  silently reporting a false success again.
+- Committed to git (previously 100 files were uncommitted with no git identity
+  configured -- both fixed: repo-local `user.name`/`user.email` set, all work
+  committed across two commits).
+
 ## 5. IMMEDIATE NEXT STEPS (priority order for the next session)
 
 1. **Fix `_observe_atspi()`'s blind spot (Bug #4 above) before trusting `action_loop.py`
