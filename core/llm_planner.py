@@ -132,6 +132,13 @@ def looks_unreliable(
     mean an extra (skippable, key-gated) AI call; false negatives mean a
     short legitimate compound command gets executed as before.
     """
+    if not intents:
+        # Zero deterministic intents is the CLEAREST case of "not trustworthy
+        # enough to execute directly" there is -- there's nothing to execute.
+        # Previously this fell through to universal_fallback's blind
+        # binary-guessing without ever giving the LLM planner a chance, even
+        # though that's exactly the situation it exists for.
+        return True
     if len(raw.split()) > 40:
         return True
     if len(intents) > max_clauses:

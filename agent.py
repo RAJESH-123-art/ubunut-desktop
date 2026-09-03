@@ -700,10 +700,18 @@ def run_command(raw: str) -> bool:
         logger.info("run_command: deterministic parse looks unreliable for this input, trying AI planner (Tier 5)")
         print("\nParse looks unreliable for this instruction -- trying AI planner...")
         ai_ok = llm_planner.plan_and_execute(raw)
-        if ai_ok is not None:
-            print(f"   {'AI plan succeeded' if ai_ok else 'AI plan failed'}")
-            return ai_ok
-        print("   AI planner unavailable/failed -- falling back to deterministic parse")
+        if ai_ok:
+            print("   AI plan succeeded")
+            return True
+        if ai_ok is False:
+            # A failed upfront script doesn't mean the goal is impossible --
+            # universal_fallback still has AT-SPI/Electron/vision layers and
+            # the adaptive closed loop (action_loop.py) left to try, which
+            # can succeed at GUI-shaped goals a one-shot bash script can't.
+            # Don't give up on the first attempt when smarter layers remain.
+            print("   AI plan failed -- trying universal fallback (adaptive loop, vision, etc.)")
+        else:
+            print("   AI planner unavailable/failed -- falling back to deterministic parse")
 
     if not intents:
         logger.warning(f"SmartParser: no intent matched for {raw!r} — trying universal fallback")

@@ -11,9 +11,12 @@ Strategy (attempted in order, returns True on first success):
                        app + an action ("in nautilus create new folder"),
                        read that app's live AT-SPI tree and click the best
                        match (see core/atspi_navigator.py)
-  3. Known binary    — if the first token of normalized is on PATH, run it
-  4. Token scan      — scan all tokens; run the first one found on PATH
-  5. Record & fail   — append to ~/.config/desktop_automation/unknown_commands.txt
+  4. Adaptive loop   — Layer 5: general-purpose observe/decide/act loop
+                       (core/action_loop.py), multi-step, no dedicated task
+                       file needed. Needs NVIDIA_TEXT_API_KEY.
+  5. Known binary    — if the first token of normalized is on PATH, run it
+  6. Token scan      — scan all tokens; run the first one found on PATH
+  7. Record & fail   — append to ~/.config/desktop_automation/unknown_commands.txt
                        and print a user-friendly tip, then return False
 
 Args:
@@ -299,6 +302,37 @@ def execute(args: dict, resources: dict) -> bool:
             logger.debug(f"semantic_vision unavailable: {exc}")
         except Exception as exc:
             logger.debug(f"Semantic vision error: {exc}")
+
+        # -- 4.5 Adaptive closed loop -- Layer 5: observe/decide/act, multi-step --
+        # This is the genuinely general-purpose layer: no dedicated tasks/*.py
+        # file, no pre-written pattern, and not limited to one click like
+        # semantic_vision above -- it repeatedly observes the real screen
+        # state (AT-SPI first, vision fallback), asks the model for exactly
+        # ONE next action, executes it, and repeats until done or it
+        # legitimately can't proceed. Needs NVIDIA_TEXT_API_KEY; silently
+        # skipped otherwise. Its own "done" claims are independently
+        # re-verified before being trusted (see core/action_loop.py).
+        try:
+            from core.action_loop import action_loop
+            if action_loop.available():
+                app_hint = ""
+                app_action = _extract_app_action(raw_command)
+                if app_action:
+                    app_hint = app_action[0]
+                logger.info(f"Adaptive loop (Layer 5): trying goal={normalized!r} app_hint={app_hint!r}")
+                loop_result = action_loop.run(normalized, app_hint=app_hint)
+                if loop_result.success:
+                    logger.info(f"✅ Handled by adaptive loop (Layer 5): {loop_result.message}")
+                    notify(f"{normalized[:60]} (adaptive loop)")
+                    finish("success", task_name)
+                    return True
+                logger.debug(f"Adaptive loop: did not complete -- {loop_result.message}")
+            else:
+                logger.debug("Adaptive loop unavailable: NVIDIA_TEXT_API_KEY not set")
+        except ImportError as exc:
+            logger.debug(f"action_loop unavailable: {exc}")
+        except Exception as exc:
+            logger.debug(f"Adaptive loop error: {exc}")
 
         # -- 3. Known binary
         # ── 3. Known binary ─ first token of normalized ───────────────────────
