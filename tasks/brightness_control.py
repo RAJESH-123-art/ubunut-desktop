@@ -131,8 +131,11 @@ def execute(args: dict, resources: dict) -> bool:
             raise ValueError(
                 f"Unknown action {action!r}. Valid: {sorted(_VALID_ACTIONS)}"
             )
-        if action == "set" and not level.isdigit():
-            raise ValueError(f"'level' must be a numeric string for action='set', got {level!r}")
+        if action == "set":
+            if not level.isdigit():
+                raise ValueError(f"'level' must be a numeric string for action='set', got {level!r}")
+            if not 0 <= int(level) <= 100:
+                raise ValueError(f"'level' must be between 0 and 100, got {level!r}")
 
         logger.info(f"Brightness action={action!r}" + (f" level={level}%" if action == "set" else ""))
 

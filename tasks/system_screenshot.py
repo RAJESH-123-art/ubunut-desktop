@@ -10,24 +10,29 @@ Decision flow (Klavaro pattern):
 Args:
     name (str): Optional filename prefix (default "desktop_screenshot_<timestamp>")
 """
-from datetime import datetime, timezone
 from pathlib import Path
 
 from loguru import logger
 
 from core.logger import finish, notify, start, take_screenshot
+from core.task_contract import TaskResult
 
 
 def setup() -> dict:
     return {}
 
 
-def execute(args: dict, resources: dict) -> bool:
+def execute(args: dict, resources: dict) -> TaskResult:
     task_name = "system_screenshot"
     start(task_name)
     try:
-        timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
-        name      = str(args.get("name") or f"desktop_screenshot_{timestamp}")
+        # take_screenshot() already stamps a unique, microsecond-precision
+        # timestamp + random suffix onto whatever base name it's given --
+        # pre-computing our own timestamp here was redundant AND buggy (this
+        # used UTC while take_screenshot()'s own timestamp uses local time,
+        # producing confusing double-timestamped filenames like
+        # "..._17-03-15_...22-33-15.png" that were actually the same instant).
+        name = str(args.get("name") or "desktop_screenshot")
 
         path_str = take_screenshot(name=name)
 
@@ -38,24 +43,28 @@ def execute(args: dict, resources: dict) -> bool:
                 "Check that gnome-screenshot, grim, scrot, or mss is installed."
             )
             finish("error", task_name)
-            return False
+            return TaskResult(False, error="Screenshot backend returned no path")
 
         path = Path(path_str)
         if not path.exists():
             logger.error(f"Screenshot path reported but file missing: {path_str}")
             finish("error", task_name)
-            return False
+            return TaskResult(False, error=f"Screenshot file missing: {path_str}")
 
         size = path.stat().st_size
         if size == 0:
             logger.error(f"Screenshot file is empty (0 bytes): {path_str}")
             finish("error", task_name)
-            return False
+            return TaskResult(False, error=f"Screenshot file is empty: {path_str}")
 
         logger.info(f"✅ Screenshot saved: {path_str} ({size:,} bytes)")
         notify(f"Screenshot: {path.name}")
         finish("success", task_name)
-        return True
+        return TaskResult(
+            True,
+            data={"path": str(path), "bytes": size},
+            evidence=[{"kind": "file", "path": str(path), "bytes": size}],
+        )
 
     except Exception as exc:
         finish("error", task_name, err=exc)

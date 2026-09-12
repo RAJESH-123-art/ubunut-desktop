@@ -13,6 +13,7 @@ import subprocess
 import time
 from typing import cast
 
+from evdev import ecodes as _ecodes
 from loguru import logger
 from pynput.keyboard import Controller as KeyboardController
 from pynput.keyboard import Key, KeyCode
@@ -20,6 +21,29 @@ from pynput.mouse import Button
 from pynput.mouse import Controller as MouseController
 
 from .logger import log_action, take_screenshot
+from .uinput_keyboard import CHAR_TO_KEY, SHIFT_CHAR_TO_KEY, VirtualKeyboard
+
+# Named-key -> evdev keycode map for press()/type_text() special keys.
+# Kept separate from _KEY_MAP (pynput Key enum) below since uinput needs raw
+# evdev keycodes, not pynput's Key objects.
+_NAMED_KEY_TO_EVDEV: dict[str, int] = {
+    "ctrl": _ecodes.KEY_LEFTCTRL, "control": _ecodes.KEY_LEFTCTRL,
+    "alt": _ecodes.KEY_LEFTALT,
+    "shift": _ecodes.KEY_LEFTSHIFT,
+    "super": _ecodes.KEY_LEFTMETA, "cmd": _ecodes.KEY_LEFTMETA,
+    "command": _ecodes.KEY_LEFTMETA, "win": _ecodes.KEY_LEFTMETA,
+    "tab": _ecodes.KEY_TAB, "enter": _ecodes.KEY_ENTER, "return": _ecodes.KEY_ENTER,
+    "esc": _ecodes.KEY_ESC, "escape": _ecodes.KEY_ESC,
+    "space": _ecodes.KEY_SPACE, "backspace": _ecodes.KEY_BACKSPACE,
+    "delete": _ecodes.KEY_DELETE, "del": _ecodes.KEY_DELETE,
+    "up": _ecodes.KEY_UP, "down": _ecodes.KEY_DOWN,
+    "left": _ecodes.KEY_LEFT, "right": _ecodes.KEY_RIGHT,
+    "home": _ecodes.KEY_HOME, "end": _ecodes.KEY_END,
+    "page_up": _ecodes.KEY_PAGEUP, "page_down": _ecodes.KEY_PAGEDOWN,
+    "f1": _ecodes.KEY_F1, "f2": _ecodes.KEY_F2, "f3": _ecodes.KEY_F3, "f4": _ecodes.KEY_F4,
+    "f5": _ecodes.KEY_F5, "f6": _ecodes.KEY_F6, "f7": _ecodes.KEY_F7, "f8": _ecodes.KEY_F8,
+    "f9": _ecodes.KEY_F9, "f10": _ecodes.KEY_F10, "f11": _ecodes.KEY_F11, "f12": _ecodes.KEY_F12,
+}
 
 
 def _to_int(value: object, default: int = 0) -> int:
@@ -75,10 +99,42 @@ class GUIController:
         self.keyboard: KeyboardController = KeyboardController()
         self._pause: float = 0.2 if safe_mode else 0.1
         self._has_ydotool: bool = bool(shutil.which("ydotool"))
+        self._has_xdotool: bool = bool(shutil.which("xdotool"))
         self._has_wmctrl: bool = bool(shutil.which("wmctrl"))
+        self._vk: VirtualKeyboard | None = None  # lazy -- see _get_vk()
         logger.info(
-            f"GUIController initialized — Wayland={IS_WAYLAND}, ydotool={self._has_ydotool}, wmctrl={self._has_wmctrl}"
+            f"GUIController initialized — Wayland={IS_WAYLAND}, ydotool={self._has_ydotool}, "
+            f"xdotool={self._has_xdotool}, wmctrl={self._has_wmctrl}"
         )
+
+    def _get_vk(self) -> VirtualKeyboard:
+        """
+        Lazily create the shared uinput virtual keyboard used by type_text()
+        and press().
+
+        WHY: pynput's keyboard Controller (self.keyboard, used by the OLD
+        implementations of these two methods) was confirmed LIVE to inject
+        ZERO real keystrokes on this Wayland/GNOME system -- verified via
+        OCR on an actual screenshot after calling type_text(), not just
+        "no exception raised". This silently broke tasks/type_text.py (the
+        real production "type text" capability) while still reporting
+        success. core.uinput_keyboard.VirtualKeyboard (kernel-level uinput
+        device, already proven working here -- it's what
+        tasks/window_management.py's keyboard-shortcut fallback uses) is the
+        mechanism that actually works, so route through it instead.
+        """
+        if self._vk is None:
+            self._vk = VirtualKeyboard()
+        return self._vk
+
+    def close(self) -> None:
+        """Release the underlying uinput device, if one was created."""
+        if self._vk is not None:
+            try:
+                self._vk.close()
+            except Exception as exc:
+                logger.debug(f"uinput close failed: {exc}")
+            self._vk = None
 
     # ── Screen ──────────────────────────────────────────────────────────────
 
@@ -142,8 +198,17 @@ class GUIController:
     # ── Mouse ────────────────────────────────────────────────────────────────
 
     def move_to(self, x: int, y: int, duration: float = 0.2) -> None:
-        """Smooth mouse move using pynput."""
-        if duration > 0:
+        """Move the real desktop pointer to absolute screen coordinates."""
+        if self._has_xdotool:
+            # pynput accepted assignments but did not move the real cursor on
+            # this GNOME/Wayland session. xdotool's XTEST path is available
+            # through XWayland and was live-verified against getmouselocation.
+            subprocess.run(
+                ["xdotool", "mousemove", str(x), str(y)],
+                check=True,
+                timeout=max(2.0, duration + 1.0),
+            )
+        elif duration > 0:
             cur_x, cur_y = self.mouse.position
             steps = max(int(duration / 0.01), 5)
             for i in range(steps + 1):
@@ -174,54 +239,124 @@ class GUIController:
         }
         btn = btn_map.get(button, Button.left)
         click_interval = 0.05 if interval is None else interval
-        for i in range(clicks):
-            self.mouse.press(btn)
-            time.sleep(0.05)
-            self.mouse.release(btn)
-            if i < clicks - 1:
-                time.sleep(click_interval)
+        if self._has_xdotool:
+            button_number = {"left": "1", "middle": "2", "right": "3"}.get(button, "1")
+            subprocess.run(
+                ["xdotool", "click", "--repeat", str(clicks), "--delay", str(max(1, int(click_interval * 1000))), button_number],
+                check=True,
+                timeout=max(2.0, clicks * click_interval + 1.0),
+            )
+        else:
+            for i in range(clicks):
+                self.mouse.press(btn)
+                time.sleep(0.05)
+                self.mouse.release(btn)
+                if i < clicks - 1:
+                    time.sleep(click_interval)
         log_action(f"click_{button}", take_shoot=False, extras={"clicks": clicks, "pos": (x, y)})
 
     def double_click(self, x: int | None = None, y: int | None = None) -> None:
         self.click(x, y, clicks=2, interval=0.1)
 
     def drag_to(self, to_x: int, to_y: int, duration: float = 0.5) -> None:
-        self.mouse.press(Button.left)
-        self.move_to(to_x, to_y, duration=duration)
-        self.mouse.release(Button.left)
+        if self._has_xdotool:
+            subprocess.run(["xdotool", "mousedown", "1"], check=True, timeout=2)
+            self.move_to(to_x, to_y, duration=duration)
+            subprocess.run(["xdotool", "mouseup", "1"], check=True, timeout=2)
+        else:
+            self.mouse.press(Button.left)
+            self.move_to(to_x, to_y, duration=duration)
+            self.mouse.release(Button.left)
         log_action("drag_to", take_shoot=False, extras={"to": (to_x, to_y)})
 
     def scroll(self, clicks: int, direction: str = "down", x: int | None = None, y: int | None = None) -> None:
         if x is not None and y is not None:
-            self.mouse.position = (x, y)
+            self.move_to(x, y, duration=0.1)
         dy = -clicks if direction == "down" else clicks
-        self.mouse.scroll(0, dy)
+        if self._has_xdotool:
+            button = "5" if direction == "down" else "4"
+            subprocess.run(
+                ["xdotool", "click", "--repeat", str(abs(clicks)), button],
+                check=True,
+                timeout=max(2.0, abs(clicks) * 0.1 + 1.0),
+            )
+        else:
+            self.mouse.scroll(0, dy)
         log_action("scroll", take_shoot=False, extras={"clicks": clicks, "direction": direction})
 
     # ── Keyboard ─────────────────────────────────────────────────────────────
 
     def type_text(self, text: str, interval: float = 0.05) -> None:
-        for char in text:
-            self.keyboard.type(char)
-            time.sleep(interval)
+        # cpm=1200 (VirtualKeyboard's own default) == 20 chars/sec ==
+        # interval=0.05s/char, so this preserves the existing default speed
+        # exactly while still honoring a caller-supplied interval.
+        cpm = 60.0 / interval if interval > 0 else 1200
+        vk = self._get_vk()
+        supported = set(CHAR_TO_KEY) | set(SHIFT_CHAR_TO_KEY)
+        unsupported = sorted({c for c in text if c not in supported})
+        if unsupported:
+            # ── Unicode/emoji fallback (Vercept-level) ───────────────────────
+            # uinput silently drops unsupported chars. If xdotool is available,
+            # use it for the full string — it handles all Unicode including emoji.
+            if self._has_xdotool:
+                logger.debug(
+                    f"type_text: {len(unsupported)} unsupported char(s) detected, "
+                    f"using xdotool Unicode fallback for full string: {unsupported!r}"
+                )
+                try:
+                    subprocess.run(
+                        ["xdotool", "type", "--clearmodifiers", "--delay",
+                         str(int(interval * 1000)), text],
+                        check=True, timeout=max(5.0, len(text) * 0.5),
+                    )
+                    log_action("type_text", take_shoot=False, extras={"len": len(text), "method": "xdotool_unicode"})
+                    return
+                except Exception as exc:
+                    logger.warning(f"type_text: xdotool Unicode fallback failed ({exc}), falling back to uinput (some chars may be lost)")
+            else:
+                logger.warning(
+                    f"type_text: {len(unsupported)} unsupported character(s) will be "
+                    f"silently skipped by the uinput backend: {unsupported!r} "
+                    f"(install xdotool for Unicode/emoji support)"
+                )
+            # ─────────────────────────────────────────────────────────────────
+        vk.type_text(text, cpm=int(cpm))
         log_action("type_text", take_shoot=False, extras={"len": len(text)})
 
     def hotkey(self, *keys: str, interval: float = 0.1) -> None:
-        """Press a key combination, e.g. hotkey('ctrl', 'c')."""
-        parsed: list[Key | KeyCode] = [_parse_key(k) for k in keys]
-        for k in parsed:
-            self.keyboard.press(k)
-            time.sleep(0.04)
-        time.sleep(interval)
-        for k in reversed(parsed):
-            self.keyboard.release(k)
+        """
+        Press a key combination as a true simultaneous chord, e.g.
+        hotkey('ctrl', 'c'). Previously used pynput (self.keyboard), which
+        -- like type_text()/press() before their fix -- was confirmed LIVE
+        to have no real effect on this Wayland system: sending Ctrl+A left
+        an AT-SPI text field with 0 selections. Routed through the same
+        proven-working uinput backend as type_text()/press(), using a real
+        hold-then-release chord instead of pynput's press()/release() pair.
+        """
+        vk = self._get_vk()
+        keycodes: list[int] = []
+        for k in keys:
+            code = _NAMED_KEY_TO_EVDEV.get(k.lower())
+            if code is None and len(k) == 1 and k.lower() in CHAR_TO_KEY:
+                code = CHAR_TO_KEY[k.lower()]
+            if code is None:
+                logger.warning(f"hotkey: unknown key {k!r} -- no evdev mapping, skipping combo")
+                return
+            keycodes.append(code)
+        vk.chord(*keycodes, hold=interval)
         log_action("hotkey", take_shoot=False, extras={"keys": list(keys)})
 
     def press(self, key: str) -> None:
-        k = _parse_key(key)
-        self.keyboard.press(k)
-        time.sleep(0.05)
-        self.keyboard.release(k)
+        vk = self._get_vk()
+        keycode = _NAMED_KEY_TO_EVDEV.get(key.lower())
+        if keycode is None and len(key) == 1:
+            vk.type_char(key)
+            log_action("press", take_shoot=False, extras={"key": key})
+            return
+        if keycode is None:
+            logger.warning(f"press: unknown key {key!r} -- no evdev mapping, ignoring")
+            return
+        vk.press_key(keycode)
         log_action("press", take_shoot=False, extras={"key": key})
 
     # ── Window management (GNOME Wayland via gdbus, wmctrl fallback) ─────────
@@ -277,9 +412,43 @@ class GUIController:
                     if len(parts) >= 4:
                         wid, desktop, _host, title = parts
                         windows.append({"id": wid, "title": title, "desktop": desktop})
-                return windows
+                if windows:
+                    return windows
             except OSError as exc:
                 logger.debug(f"wmctrl list failed: {exc}")
+
+        # Fallback: AT-SPI accessibility tree. Modern GNOME (43+) disables
+        # org.gnome.Shell.Eval unless "unsafe mode" is explicitly enabled --
+        # confirmed live: it returns (false, '') on this system, so the
+        # "primary" method above silently returns nothing. wmctrl only sees
+        # XWayland-registered windows, so native Wayland apps (the majority
+        # on a modern GNOME session) are invisible to it too. AT-SPI is the
+        # mechanism already proven working for window detection elsewhere in
+        # this codebase (tasks/window_management.py) -- reuse the same
+        # approach here so GUIController.get_window_list() actually returns
+        # real windows instead of an empty list on systems like this one.
+        try:
+            import pyatspi
+            windows = []
+            desktop_obj = pyatspi.Registry.getDesktop(0)
+            for app in desktop_obj:
+                if app is None:
+                    continue
+                for i in range(app.childCount):
+                    try:
+                        frame = app.getChildAtIndex(i)
+                        if frame is None:
+                            continue
+                        if frame.getRoleName() in ("frame", "dialog", "window", "alert"):
+                            windows.append({"title": frame.name or "", "app": app.name or ""})
+                    except Exception as exc:
+                        logger.debug(f"window enum: skipping app {getattr(app, 'name', '?')}: {exc}")
+                        continue
+            if windows:
+                return windows
+        except Exception as exc:
+            logger.debug(f"AT-SPI window list fallback failed: {exc}")
+
         return []
 
     def focus_window(self, title_or_id: str) -> bool:

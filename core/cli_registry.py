@@ -115,6 +115,7 @@ def _run_one(command: str, timeout: float) -> bool:
     try:
         proc = subprocess.run(
             command, shell=True, capture_output=True, text=True, timeout=timeout,
+            check=False,  # returncode checked below
         )
         if proc.returncode == 0:
             if proc.stdout.strip():

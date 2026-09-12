@@ -63,11 +63,10 @@ def execute(args: dict, resources: dict) -> bool:
                 f"Unknown action {action!r}. Valid: {sorted(_VALID_ACTIONS)}"
             )
 
-        # ── Warn before destructive actions ───────────────────────────
-        # SAFETY: explicit confirm=False lets a caller (or a future
-        # confirmation-UI layer) abort before anything irreversible happens.
-        if action in _DESTRUCTIVE and args.get("confirm", True) is False:
-            logger.info(f"Power action {action!r} cancelled via confirm=False")
+        # Direct task callers must explicitly authorize every power-state
+        # change. Agent/workflow policy approval is forwarded as confirm=True.
+        if args.get("confirm") is not True:
+            logger.info(f"Power action {action!r} refused without confirm=True")
             finish("error", task_name)
             return False
 

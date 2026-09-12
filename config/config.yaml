@@ -56,10 +56,10 @@ system:
   shell: "/bin/bash"
   screenshot_tool: "scrot"  # X11 screenshot tool
 
-# Installation credentials
-# Password used for App Center / polkit authentication dialog
-install:
-  sudo_password: "rgukt"
+# Installation settings. Never store passwords in tracked configuration.
+# If legacy automation absolutely requires one, provide
+# AUTOMATION_SUDO_PASSWORD through config/secrets.env; prefer Polkit prompts.
+install: {}
 
 # Task defaults
 tasks:

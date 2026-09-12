@@ -10,16 +10,16 @@ Requires: NVIDIA API key with vision model access.
 Set env vars: NVIDIA_API_KEY, NVIDIA_BASE_URL, NVIDIA_VISION_MODEL
 """
 from __future__ import annotations
+
 import base64
 import json
 import os
-import subprocess
-import time
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Tuple
+
 from loguru import logger
 
-from core.atspi_utils import find_node, do_action
+from core.atspi_utils import do_action
 from core.logger import take_screenshot
 
 
@@ -46,9 +46,9 @@ class SemanticVision:
     
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
-        vision_model: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        vision_model: str | None = None,
         timeout: float = 30.0,
     ):
         """
@@ -87,17 +87,35 @@ class SemanticVision:
     # TIER 1: AT-SPI (Local, Fast, Exact)
     # ═══════════════════════════════════════════════════════════════
     
-    def find_by_atspi(self, description: str, app_name: str = "") -> Optional[object]:
+    def find_by_atspi(self, description: str, app_name: str = "") -> object | None:
         """
         Find UI element via AT-SPI accessibility tree.
         Works for GTK/Qt apps with proper accessibility support.
         """
         try:
             import sys
+
             import pyatspi
             sys.path.insert(0, "/usr/lib/python3/dist-packages")
             
-            words = description.lower().split()
+            # Strip quote characters from each token -- an LLM describing a
+            # target as "click the '3' button" produces the literal token
+            # "'3'" (WITH quotes), which can never substring-match a real
+            # button whose AT-SPI name is just "3" (no quotes: "'3'" is
+            # longer than "3", so it can never be "in" it). Confirmed live:
+            # this silently made AT-SPI matching fail for calculator digit/
+            # operator buttons ('3', '+', '=') whenever the model quoted the
+            # symbol in its description, forcing a fall-through to much less
+            # reliable OCR/vision-guessed coordinates for exactly the
+            # targets AT-SPI direct actions handle best.
+            words = [w.strip("'\"\u2018\u2019\u201c\u201d") for w in description.lower().split()]
+            app_aliases = {
+                "libreoffice": "soffice",
+                "libreoffice calc": "soffice",
+                "libreoffice writer": "soffice",
+                "libreoffice impress": "soffice",
+            }
+            matched_app_name = app_aliases.get(app_name.lower(), app_name).lower()
             # Destructive/window-chrome controls that a vague, fuzzy-matched
             # description should never land on by accident -- e.g. an LLM
             # decision like "click the equals button" must never silently hit
@@ -112,26 +130,54 @@ class SemanticVision:
             
             def walk(node):
                 nonlocal best_score, best_node
-                if node is None:
+                if node is None or best_score >= 100:
                     return
                 try:
                     node_name = (node.name or "").lower()
                     if node_name and not (node_name in _guarded_names and node_name not in words):
-                        score = sum(1 for w in words if w in node_name)
-                        if score > best_score:
-                            best_score, best_node = score, node
-                except Exception:
-                    pass
+                        # Only select nodes that can actually perform an action.
+                        # GTK may expose duplicate visual/accessibility nodes where
+                        # one has the right name but zero actions; selecting that
+                        # decoy previously made clicks report success while doing
+                        # nothing (confirmed live with Calculator's `c` button).
+                        try:
+                            action_iface = node.queryAction()
+                            action_names = {
+                                action_iface.getName(i).lower()
+                                for i in range(action_iface.nActions)
+                            }
+                            actionable = bool(
+                                action_names.intersection({"click", "press", "activate"})
+                            )
+                        except Exception:
+                            actionable = False
+                        if actionable:
+                            score = sum(1 for w in words if w in node_name)
+                            # Exact accessible-name matches must beat incidental
+                            # substring ties. For "click the 'c' button", both
+                            # `c` and `basic` scored 1, so traversal selected
+                            # Basic and reported a successful Clear action while
+                            # the expression remained unchanged.
+                            if node_name in words:
+                                score += 100
+                            if score > best_score:
+                                best_score, best_node = score, node
+                except Exception as exc:
+                    logger.debug(f"semantic vision: node walk failed: {exc}")
                 for i in range(node.childCount):
+                    if best_score >= 100:
+                        break
                     try:
                         walk(node.getChildAtIndex(i))
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug(f"semantic vision: child walk failed: {exc}")
             
             for app in desktop:
+                if best_score >= 100:
+                    break
                 if app is None:
                     continue
-                if app_name and app_name.lower() not in (app.name or "").lower():
+                if matched_app_name and matched_app_name not in (app.name or "").lower():
                     continue
                 walk(app)
             
@@ -146,14 +192,14 @@ class SemanticVision:
     # TIER 2: OCR (Local, Text-Based)
     # ═══════════════════════════════════════════════════════════════
     
-    def find_by_ocr(self, description: str) -> Optional[Tuple[int, int]]:
+    def find_by_ocr(self, description: str) -> Tuple[int, int] | None:
         """
         Find element via OCR text matching.
         Returns (x, y) center coordinates of matching text.
         """
         try:
-            import pytesseract
             import cv2
+            import pytesseract
             
             ss = take_screenshot(name="semantic_vision_ocr")
             img = cv2.imread(ss)
@@ -182,7 +228,7 @@ class SemanticVision:
     # TIER 3: NVIDIA VISION MODEL (Cloud, Universal)
     # ═══════════════════════════════════════════════════════════════
     
-    def find_by_vision_model(self, description: str) -> Optional[Tuple[int, int]]:
+    def find_by_vision_model(self, description: str) -> Tuple[int, int] | None:
         """
         Use NVIDIA Vision Model to locate UI element.
         Returns (x, y) pixel coordinates.
@@ -195,14 +241,37 @@ class SemanticVision:
             # Take screenshot
             ss = take_screenshot(name="semantic_vision_nvidia")
             with open(ss, "rb") as f:
-                img_b64 = base64.b64encode(f.read()).decode()
-            
+                img_bytes = f.read()
+            img_b64 = base64.b64encode(img_bytes).decode()
+
+            # The model must be told the EXACT pixel dimensions of the image
+            # it's looking at and asked to answer in that same coordinate
+            # space. Without this, a model that internally resizes the image
+            # before "looking" at it has no way to know what space to answer
+            # in, and coordinates can land systematically offset from the
+            # real click target -- this is the same scale-mismatch problem
+            # documented for computer-use tools generally (see
+            # VERCEPT_LEVEL_ROADMAP.md). We never resize the screenshot
+            # ourselves, so no scale-back math is needed on our end -- just
+            # removing the model's ambiguity about which space to answer in.
+            width, height = 0, 0
+            try:
+                import cv2
+                dims_img = cv2.imread(ss)
+                if dims_img is not None:
+                    height, width = dims_img.shape[:2]
+            except Exception as exc:
+                logger.debug(f"semantic vision: cv2 image read failed: {exc}")
+            dims_note = f"exactly {width}x{height} pixels (width x height)" if width and height else "of unknown but fixed pixel dimensions"
+
             # Build prompt for vision model
             prompt = (
-                f"Look at this desktop screenshot. "
+                f"Look at this desktop screenshot, which is {dims_note}. "
                 f"Find the UI element described as: '{description}'. "
-                f"Return ONLY a JSON object with pixel coordinates: "
-                f'{{"x": <int>, "y": <int>}}. '
+                f"Return ONLY a JSON object with pixel coordinates IN THIS EXACT "
+                f"IMAGE's coordinate space (0,0 = top-left corner of THIS image, "
+                f"not a resized or cropped version of it): "
+                f'{{"x": <int 0-{width or 99999}>, "y": <int 0-{height or 99999}>}}. '
                 f"If not found, return {{\"x\": -1, \"y\": -1}}"
             )
             
@@ -258,9 +327,10 @@ class SemanticVision:
         node = self.find_by_atspi(description, app_name)
         if node:
             try:
-                do_action(node)
-                logger.info(f"✅ Clicked '{description}' via AT-SPI (Tier 1)")
-                return VisionResult(True, method="atspi", x=0, y=0)
+                if do_action(node):
+                    logger.info(f"✅ Clicked '{description}' via AT-SPI (Tier 1)")
+                    return VisionResult(True, method="atspi", x=0, y=0)
+                logger.debug(f"AT-SPI action returned False for '{description}'")
             except Exception as exc:
                 logger.debug(f"AT-SPI click failed: {exc}")
         

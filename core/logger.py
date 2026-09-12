@@ -43,6 +43,7 @@ def _screenshot_gnome(path: Path) -> bool:
         result = subprocess.run(
             ["gnome-screenshot", "-f", str(path)],
             capture_output=True, text=True, timeout=10,
+            check=False,  # returncode checked below
         )
         return result.returncode == 0 and path.exists()
     except Exception as exc:
@@ -58,6 +59,7 @@ def _screenshot_grim(path: Path) -> bool:
         result = subprocess.run(
             ["grim", str(path)],
             capture_output=True, text=True, timeout=10,
+            check=False,  # returncode checked below
         )
         return result.returncode == 0 and path.exists()
     except Exception as exc:
@@ -73,6 +75,7 @@ def _screenshot_scrot(path: Path) -> bool:
         result = subprocess.run(
             ["scrot", str(path)],
             capture_output=True, text=True, timeout=10,
+            check=False,  # returncode checked below
         )
         return result.returncode == 0 and path.exists()
     except Exception as exc:
@@ -106,25 +109,39 @@ def take_screenshot(name: str | None = None, region: Dict[str, int] | None = Non
       3. scrot             — X11 / XWayland
       4. mss               — X11 / XWayland fallback
     """
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    # Microsecond precision + a short random suffix -- second-granularity
+    # timestamps alone collide when multiple screenshots are taken within
+    # the same second (e.g. parallel DAG nodes), silently overwriting each
+    # other while every individual call still reports success. Verified
+    # live: a 3-node parallel "screenshot" DAG produced only 1 file on disk
+    # despite the DAG reporting all 3 nodes done.
+    import os as _os
+    timestamp = datetime.datetime.now(tz=None).astimezone().strftime("%Y-%m-%d_%H-%M-%S_%f")
+    unique_suffix = _os.urandom(3).hex()
     base_name = (name or "screenshot").replace(" ", "_")
-    screenshot_path = LOGS_DIR / f"{base_name}_{timestamp}.png"
+    screenshot_path = LOGS_DIR / f"{base_name}_{timestamp}_{unique_suffix}.png"
 
-    # Region screenshots only supported by mss; warn and drop region for other backends
-    if region and IS_WAYLAND:
-        logger.debug("Region screenshots on Wayland fall back to mss / full-screen crop")
-
+    # Region capture MUST be tried first when a region is given -- gnome-screenshot
+    # and grim are full-screen-only and silently IGNORE the region entirely, so
+    # trying them first (as this used to) means a region request always came back
+    # as a full-screen image whenever they succeeded, with no error or warning.
+    # Verified live: requesting a 400x300 region returned a full 1366x768 image.
     success = False
-    if IS_WAYLAND:
-        # Try Wayland-native tools first
+    if region:
+        success = _screenshot_mss(screenshot_path, region)
+        if not success:
+            logger.warning(
+                "Region capture via mss failed -- falling back to a full-screen "
+                "screenshot (region will NOT be honored)"
+            )
+
+    if not success and IS_WAYLAND:
+        # Try Wayland-native tools (full-screen only)
         success = _screenshot_gnome(screenshot_path) or _screenshot_grim(screenshot_path)
 
-    # Fallback: X11 / XWayland tools (also the only option for region capture)
+    # Fallback: X11 / XWayland tools
     if not success:
-        if region:
-            success = _screenshot_mss(screenshot_path, region)
-        else:
-            success = _screenshot_scrot(screenshot_path) or _screenshot_mss(screenshot_path)
+        success = _screenshot_scrot(screenshot_path) or _screenshot_mss(screenshot_path)
 
     if success:
         logger.info(f"Screenshot saved: {screenshot_path}")
@@ -183,7 +200,7 @@ def start(task_name: str, task_desc: str | None = None) -> Dict[str, Any]:
     meta: Dict[str, Any] = {
         "task": task_name,
         "status": "started",
-        "ts": datetime.datetime.now().isoformat(),
+        "ts": datetime.datetime.now(tz=None).astimezone().isoformat(),
     }
     if task_desc:
         meta["description"] = task_desc
@@ -196,7 +213,7 @@ def finish(status: str, task_name: str, err: BaseException | None = None) -> Dic
     meta: Dict[str, Any] = {
         "task": task_name,
         "status": status,
-        "ts": datetime.datetime.now().isoformat(),
+        "ts": datetime.datetime.now(tz=None).astimezone().isoformat(),
     }
     if err:
         meta["error"] = str(err)

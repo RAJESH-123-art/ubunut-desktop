@@ -294,15 +294,16 @@ def _step5_authenticate(password: str, vk: VirtualKeyboard) -> bool:
         pwd_node = (find_node(polkit, role=pyatspi.ROLE_PASSWORD_TEXT)
                     or find_node(polkit, role=pyatspi.ROLE_ENTRY))
 
-        if pwd_node:
-            do_action(pwd_node)
-            time.sleep(0.15)
-            if not set_text(pwd_node, password):
-                vk.type_text(password, cpm=1200)
-        else:
-            vk.type_text(password, cpm=1200)
+        if not pwd_node:
+            logger.error("Authentication dialog has no confirmed password field; refusing blind typing")
+            return False
+        do_action(pwd_node)
+        time.sleep(0.15)
+        if not set_text(pwd_node, password):
+            logger.error("Could not set the confirmed password field; refusing blind keyboard fallback")
+            return False
 
-        logger.info("         Password entered ✅")
+        logger.info("         Password entered into confirmed field ✅")
         time.sleep(0.2)
 
         # Click Authenticate / OK
@@ -315,9 +316,8 @@ def _step5_authenticate(password: str, vk: VirtualKeyboard) -> bool:
                 return True
 
     else:
-        logger.info("         Polkit not in AT-SPI — typing password blind …")
-        vk.type_text(password, cpm=1200)
-        logger.info("         Password typed ✅")
+        logger.error("Polkit dialog is not visible in AT-SPI; refusing blind password typing")
+        return False
 
     # Final Enter
     vk.press_key(evdev.ecodes.KEY_ENTER, delay=0.08)

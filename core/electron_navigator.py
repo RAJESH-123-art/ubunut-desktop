@@ -147,7 +147,8 @@ def click_by_intent(port: int, phrase: str, timeout: float = 6.0) -> ElectronRes
                         continue
                     aria_label = elem.get_attribute("aria-label")
                     label = (aria_label or elem.inner_text() or "").strip()
-                except Exception:
+                except Exception as exc:
+                    logger.debug(f"electron nav: skipping unreadable element: {exc}")
                     continue
                 if not label:
                     continue
@@ -231,7 +232,8 @@ def type_by_intent(
                     aria_label = elem.get_attribute("aria-label")
                     placeholder = elem.get_attribute("placeholder")
                     label = (aria_label or placeholder or elem.inner_text() or "").strip()
-                except Exception:
+                except Exception as exc:
+                    logger.debug(f"electron nav: skipping unreadable element: {exc}")
                     continue
                 if not label:
                     continue
@@ -254,7 +256,7 @@ def type_by_intent(
             
             if press_enter:
                 best_elem.press("Enter")
-                logger.info(f"electron_navigator: pressed Enter after typing")
+                logger.info("electron_navigator: pressed Enter after typing")
             
             return ElectronResult(True, matched_text=best_label, candidates_considered=considered)
     except Exception as exc:

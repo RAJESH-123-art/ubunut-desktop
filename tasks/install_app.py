@@ -155,12 +155,16 @@ def execute(args: dict, resources: dict) -> bool:
     logger.info(f"CLI ── sudo snap install {pkg}")
     if password:
         result = subprocess.run(
-            f"echo {password!r} | sudo -S snap install {pkg}",
-            shell=True, capture_output=True, text=True, timeout=300, check=False,
+            ["sudo", "-S", "-p", "", "snap", "install", pkg],
+            input=f"{password}\n", capture_output=True, text=True,
+            timeout=300, check=False,
         )
     else:
+        # Never wait on an invisible interactive password prompt. ``-n``
+        # performs a safe capability check and fails immediately when sudo
+        # authentication is required.
         result = subprocess.run(
-            ["sudo", "snap", "install", pkg],
+            ["sudo", "-n", "snap", "install", pkg],
             capture_output=True, text=True, timeout=300, check=False,
         )
 

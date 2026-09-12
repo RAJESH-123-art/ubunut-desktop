@@ -1,0 +1,22 @@
+# Core runtime
+loguru>=0.7,<1
+PyYAML>=6,<7
+
+# Browser and AI-assisted planning
+playwright>=1.45,<2
+openai>=1.0,<3
+
+# Desktop input and visual automation
+evdev>=1.7,<2
+pynput>=1.7,<2
+opencv-python>=4.8,<5
+
+# Development and verification
+pytest>=8,<9
+
+# Install these through the operating system, not pip:
+# python3-pyatspi, python3-gi, gir1.2-gtk-3.0, tesseract-ocr
+
+# Spreadsheet and document production
+openpyxl>=3.1,<4
+python-docx>=1.1,<2

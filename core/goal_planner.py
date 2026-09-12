@@ -9,15 +9,16 @@ Strategy:
   5. Return executable TaskDAG
 """
 from __future__ import annotations
+
 import re
 import uuid
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List
+
 from loguru import logger
 
-from core.smart_parser import smart_parser, ParsedIntent
+from core.smart_parser import ParsedIntent, smart_parser
 from core.task_dag import TaskDAG, TaskNode
 from core.world_model import world
-
 
 # Dependency rules: if intent_A result feeds intent_B → B depends on A
 DEPENDENCY_RULES: List[tuple[str, str]] = [

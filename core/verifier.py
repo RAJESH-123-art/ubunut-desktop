@@ -7,7 +7,8 @@ Zero AI. Uses three independent evidence methods:
   3. CLI command            — run a shell command and check exit code
   4. Template matching      — find a reference image on screen (OpenCV)
 
-A verification PASSES when ANY one method returns True.
+A verification passes only when its configured evidence policy is satisfied.
+Unavailable checks are ignored, but empty evidence fails closed by default.
 All evidence is logged so failures are debuggable.
 """
 from __future__ import annotations
@@ -16,7 +17,6 @@ import shutil
 import subprocess
 import time
 from dataclasses import dataclass, field
-from typing import Optional
 
 from loguru import logger
 
@@ -29,8 +29,8 @@ class VerifySpec:
     """
     Describes the expected post-action UI/system state.
 
-    At least one field should be filled; the first method that
-    confirms the expectation causes verify() to return True.
+    At least one evidence field should be filled. By default every available
+    configured check must pass; unavailable checks do not create false failures.
     """
     # OCR: all of these strings must appear somewhere on screen
     expect_text: list[str] = field(default_factory=list)
@@ -44,6 +44,10 @@ class VerifySpec:
     expect_image: str = ""
     # How long to wait before checking (let UI settle)
     settle_wait: float = 1.5
+    # True: every available check must pass. False: any available check may pass.
+    require_all: bool = True
+    # Explicit opt-in for callers whose successful action result is sufficient.
+    allow_empty: bool = False
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -58,13 +62,18 @@ def app_center_open_spec() -> VerifySpec:
         expect_app="snap-store",
     )
 
-def browser_open_spec(url_fragment: str = "") -> VerifySpec:
-    # Use a CLI check (any browser process running) rather than OCR ALL-match,
-    # which would require every browser name to appear simultaneously — impossible.
+def browser_open_spec(url_fragment: str = "", browser: str = "") -> VerifySpec:
+    # Use a CLI check rather than OCR ALL-match, which would require every
+    # browser name to appear simultaneously — impossible. When a specific
+    # `browser` was requested, verify THAT process specifically — otherwise
+    # a request for e.g. Firefox could be wrongly "confirmed" just because
+    # some other browser (like an already-running Chrome) happens to match
+    # the generic any-browser pattern.
     texts = [url_fragment.lower()] if url_fragment else []
+    proc_pattern = browser if browser else "chromium|brave|firefox|chrome"
     return VerifySpec(
         expect_text=texts,
-        expect_cmd="pgrep -f 'chromium|brave|firefox|chrome' > /dev/null 2>&1",
+        expect_cmd=f"pgrep -f '{proc_pattern}' > /dev/null 2>&1",
         settle_wait=2.5,
     )
 
@@ -73,10 +82,6 @@ def whatsapp_open_spec() -> VerifySpec:
         expect_text=["whatsapp"],
         expect_app="chrome",
     )
-
-def screenshot_taken_spec() -> VerifySpec:
-    # Just verify no crash — OCR isn't useful here
-    return VerifySpec(settle_wait=0.5)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -116,13 +121,14 @@ class Verifier:
             r = subprocess.run(
                 ["tesseract", path, "stdout", "--psm", "3"],
                 capture_output=True, text=True, timeout=15,
+                check=False,  # returncode checked by caller via stdout
             )
             return r.stdout.lower()
         except Exception as exc:
             logger.debug(f"OCR failed: {exc}")
             return ""
 
-    def _check_ocr(self, expect: list[str], reject: list[str]) -> Optional[bool]:
+    def _check_ocr(self, expect: list[str], reject: list[str]) -> bool | None:
         """None = OCR not configured, True/False = result."""
         if not expect and not reject:
             return None
@@ -137,7 +143,7 @@ class Verifier:
 
     # ── Method 2: AT-SPI ─────────────────────────────────────────────────────
 
-    def _check_atspi(self, app_name: str) -> Optional[bool]:
+    def _check_atspi(self, app_name: str) -> bool | None:
         if not app_name:
             return None
         try:
@@ -159,11 +165,12 @@ class Verifier:
 
     # ── Method 3: CLI command ─────────────────────────────────────────────────
 
-    def _check_cli(self, cmd: str) -> Optional[bool]:
+    def _check_cli(self, cmd: str) -> bool | None:
         if not cmd:
             return None
         try:
-            r = subprocess.run(cmd, shell=True, capture_output=True, timeout=10)
+            r = subprocess.run(cmd, shell=True, capture_output=True, timeout=10,
+                               check=False)  # returncode checked below
             result = r.returncode == 0
             logger.debug(f"CLI check '{cmd}': {'✅' if result else '❌'} (exit {r.returncode})")
             return result
@@ -173,11 +180,12 @@ class Verifier:
 
     # ── Method 4: Template matching ───────────────────────────────────────────
 
-    def _check_template(self, template_path: str) -> Optional[bool]:
+    def _check_template(self, template_path: str) -> bool | None:
         if not template_path or not self._cv_ok:
             return None
         try:
             import cv2
+
             from core.logger import take_screenshot
             screen_path = take_screenshot(name="verifier_tmpl")
             if not screen_path:
@@ -204,12 +212,12 @@ class Verifier:
     def verify(self, spec: VerifySpec) -> bool:
         """
         Run all configured evidence checks.
-        Returns True if at least one method confirms the expected state.
-        Returns True unconditionally if no checks are configured (trust caller).
+        Unavailable methods return None and are ignored. With the default
+        require_all policy, any explicit contradiction fails verification.
         """
         time.sleep(spec.settle_wait)
 
-        evidence: dict[str, Optional[bool]] = {
+        evidence: dict[str, bool | None] = {
             "ocr":      self._check_ocr(spec.expect_text, spec.reject_text),
             "atspi":    self._check_atspi(spec.expect_app),
             "cli":      self._check_cli(spec.expect_cmd),
@@ -220,13 +228,17 @@ class Verifier:
         active = {k: v for k, v in evidence.items() if v is not None}
 
         if not active:
-            logger.debug("Verifier: no checks configured — trusting action result")
-            return True
+            verdict = spec.allow_empty
+            logger.info(
+                "Verifier: no available evidence → "
+                f"{'trusted by explicit policy' if verdict else 'not confirmed'}"
+            )
+            return verdict
 
         passed  = [k for k, v in active.items() if v]
         failed  = [k for k, v in active.items() if not v]
 
-        verdict = len(passed) > 0
+        verdict = all(active.values()) if spec.require_all else any(active.values())
         logger.info(
             f"Verifier: passed={passed} failed={failed} → "
             f"{'✅ CONFIRMED' if verdict else '❌ NOT CONFIRMED'}"

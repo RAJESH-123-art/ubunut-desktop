@@ -8,7 +8,10 @@ Does NOT collect: usernames, passwords, browser data, personal files.
 import subprocess
 from pathlib import Path
 from typing import Any
+
 from loguru import logger
+
+from core.task_contract import TaskResult
 
 
 def _run(cmd: str) -> str:
@@ -19,7 +22,11 @@ def _run(cmd: str) -> str:
         return "N/A"
 
 
-def execute(args: dict[str, Any], resources: dict[str, Any]) -> bool:
+def setup() -> dict[str, Any]:
+    return {}
+
+
+def execute(args: dict[str, Any], resources: dict[str, Any]) -> TaskResult:
     save_path = args.get("save_path", "") or "/tmp/system_info.txt"
     logger.info(f"🖥️  Collecting system info → {save_path}")
 
@@ -80,7 +87,17 @@ def execute(args: dict[str, Any], resources: dict[str, Any]) -> bool:
         logger.info(f"✅ Saved to {save_path}")
     except Exception as e:
         logger.error(f"Could not save: {e}")
+        return TaskResult(False, error=f"Could not save system report: {e}")
 
     print(report)
     print(f"\n📄 Saved → {save_path}")
-    return True
+    path = Path(save_path)
+    return TaskResult(
+        True,
+        data={"path": str(path), "bytes": path.stat().st_size},
+        evidence=[{"kind": "file", "path": str(path), "bytes": path.stat().st_size}],
+    )
+
+
+def cleanup(resources: dict[str, Any]) -> None:
+    return None

@@ -22,13 +22,14 @@ from loguru import logger
 
 from core.logger import finish, notify, start
 from core.safety_guard import assert_safe_to_delete
+from core.task_contract import TaskResult
 
 
 def setup() -> dict:
     return {}
 
 
-def execute(args: dict, resources: dict) -> bool:
+def execute(args: dict, resources: dict) -> TaskResult:
     task_name = "file_operations"
     start(task_name)
     try:
@@ -47,7 +48,9 @@ def execute(args: dict, resources: dict) -> bool:
         if operation not in valid_ops:
             raise ValueError(f"Unknown operation {operation!r}. Valid: {sorted(valid_ops)}")
 
-        src = Path(file_name).expanduser().resolve()
+        src_input = Path(file_name).expanduser()
+        src = src_input.absolute()
+        result_data: dict[str, object] = {"operation": operation, "source": str(src)}
 
         # ── Pre-act verify: source must exist ─────────────────────────────────
         if not src.exists():
@@ -69,6 +72,7 @@ def execute(args: dict, resources: dict) -> bool:
                 raise RuntimeError(f"Delete appeared to succeed but file still exists: {src}")
             logger.info(f"✅ Deleted: {src}")
             notify(f"Deleted: {src.name}")
+            result_data.update({"path": str(src), "deleted": True})
 
         # ── move ──────────────────────────────────────────────────────────────
         elif operation == "move":
@@ -85,6 +89,7 @@ def execute(args: dict, resources: dict) -> bool:
                 logger.warning(f"Source still exists after move (may be a copy): {src}")
             logger.info(f"✅ Moved: {src.name} → {dst}")
             notify(f"Moved: {src.name} → {dst}")
+            result_data.update({"path": str(dst_final), "destination": str(dst_final)})
 
         # ── copy ──────────────────────────────────────────────────────────────
         elif operation == "copy":
@@ -99,11 +104,15 @@ def execute(args: dict, resources: dict) -> bool:
                 raise RuntimeError(f"Copy appeared to succeed but destination not found: {dst_final}")
             logger.info(f"✅ Copied: {src.name} → {dst}")
             notify(f"Copied: {src.name} → {dst}")
+            result_data.update({"path": str(dst_final), "destination": str(dst_final)})
 
         # ── rename ────────────────────────────────────────────────────────────
         elif operation == "rename":
             if not new_name:
                 raise ValueError("'new_name' is required for 'rename'")
+            name_path = Path(new_name)
+            if name_path.is_absolute() or len(name_path.parts) != 1 or new_name in (".", ".."):
+                raise ValueError("'new_name' must be one plain filename, not a path")
             dst = src.parent / new_name
             if dst.exists():
                 raise FileExistsError(f"Cannot rename — target already exists: {dst}")
@@ -115,9 +124,14 @@ def execute(args: dict, resources: dict) -> bool:
                 raise RuntimeError(f"Rename appeared to succeed but old file still exists: {src}")
             logger.info(f"✅ Renamed: {src.name} → {dst.name}")
             notify(f"Renamed: {src.name} → {dst.name}")
+            result_data.update({"path": str(dst), "destination": str(dst)})
 
         finish("success", task_name)
-        return True
+        return TaskResult(
+            True,
+            data=result_data,
+            evidence=[{"kind": "filesystem", **result_data}],
+        )
 
     except Exception as exc:
         finish("error", task_name, err=exc)

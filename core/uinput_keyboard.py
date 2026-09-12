@@ -5,7 +5,9 @@ Works on Wayland, X11, native GTK/Qt/Flutter apps.
 """
 
 import time
-from evdev import UInput, ecodes as e
+
+from evdev import UInput
+from evdev import ecodes as e
 
 CHAR_TO_KEY = {
     'a': e.KEY_A, 'b': e.KEY_B, 'c': e.KEY_C, 'd': e.KEY_D, 'e': e.KEY_E,
@@ -44,6 +46,17 @@ class VirtualKeyboard:
         self.ui = UInput(cap, name="MasterAgent Virtual Keyboard")
         time.sleep(0.5)
 
+    def key_down(self, keycode: int) -> None:
+        """Press and HOLD a key (no release) -- needed for real chords like Ctrl+A,
+        where the modifier must still be down when the second key is pressed."""
+        self.ui.write(e.EV_KEY, keycode, 1)
+        self.ui.syn()
+
+    def key_up(self, keycode: int) -> None:
+        """Release a key previously held down via key_down()."""
+        self.ui.write(e.EV_KEY, keycode, 0)
+        self.ui.syn()
+
     def press_key(self, keycode: int, delay: float = 0.005):
         self.ui.write(e.EV_KEY, keycode, 1)
         self.ui.syn()
@@ -51,6 +64,23 @@ class VirtualKeyboard:
         self.ui.write(e.EV_KEY, keycode, 0)
         self.ui.syn()
         time.sleep(delay)
+
+    def chord(self, *keycodes: int, hold: float = 0.05) -> None:
+        """
+        Press multiple keys as a true simultaneous chord: hold ALL down
+        together, then release in reverse order -- e.g. chord(KEY_LEFTCTRL,
+        KEY_A) for Ctrl+A. Unlike calling press_key() on each key
+        separately (which presses and releases each one in isolation, never
+        actually holding them together), this is what real modifier
+        shortcuts require to be recognized by the focused application.
+        """
+        for k in keycodes:
+            self.key_down(k)
+            time.sleep(0.01)
+        time.sleep(hold)
+        for k in reversed(keycodes):
+            self.key_up(k)
+            time.sleep(0.01)
 
     def type_char(self, char: str, delay: float = 0.005):
         if char in CHAR_TO_KEY:

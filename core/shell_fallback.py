@@ -29,7 +29,8 @@ def try_commands(candidates: list[list[str]], timeout: float = 10.0) -> bool:
             logger.debug(f"try_commands: '{binary}' not on PATH — skipping {cmd!r}")
             continue
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
+                                   check=False)  # returncode checked below
             if result.returncode == 0:
                 logger.debug(f"try_commands: succeeded: {cmd!r}")
                 return True
@@ -51,7 +52,8 @@ def try_shell_commands(candidates: list[str], timeout: float = 10.0) -> bool:
         if not cmd:
             continue
         try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout,
+                                   check=False)  # returncode checked below
             if result.returncode == 0:
                 logger.debug(f"try_shell_commands: succeeded: {cmd!r}")
                 return True

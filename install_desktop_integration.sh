@@ -11,7 +11,7 @@ PYTHON="$PROJECT_DIR/.venv/bin/python3"
 [ -x "$PYTHON" ] || PYTHON="$(command -v python3)"
 
 echo "== 1/2: Global hotkey overlay (Ctrl+Alt+A) =="
-python3 - "$PROJECT_DIR/scripts/agent_prompt.sh" <<'PYEOF'
+python3 - "$PROJECT_DIR/scripts/command_bar.sh" <<'PYEOF'
 import ast
 import subprocess
 import sys
@@ -79,7 +79,7 @@ systemctl --user enable --now desktop-agent.service
 echo "Daemon service installed and started."
 echo ""
 echo "== Done =="
-echo "Press Ctrl+Alt+A anywhere to open the agent prompt (type a command, it runs, you get a notification)."
+echo "Press Ctrl+Alt+A anywhere to open the command bar (recent-commands dropdown, live status while it runs, and a confirm prompt before sending/deleting/installing/power actions)."
 echo "Scheduled triggers in config/triggers.yaml now run 24/7 via systemd -- check with:"
 echo "  systemctl --user status desktop-agent.service"
 echo "To remove: systemctl --user disable --now desktop-agent.service && rm ~/.config/systemd/user/desktop-agent.service"

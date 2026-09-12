@@ -26,6 +26,7 @@ import re
 import time
 from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import Any
 
 from loguru import logger
 
@@ -42,6 +43,10 @@ CLICKABLE_ROLES = {
     "toggle button", "list item", "tab", "icon",
 }
 TEXT_ENTRY_ROLES = {"entry", "text", "password text"}
+READABLE_ROLES = TEXT_ENTRY_ROLES | {
+    "label", "static", "status bar", "table cell", "list item", "heading",
+    "paragraph", "document text",
+}
 DIALOG_ROLES = {"dialog", "alert", "file chooser"}
 
 _STOPWORDS = {"the", "a", "an", "to", "in", "on", "of", "and", "with", "for", "into"}
@@ -72,6 +77,7 @@ _SYNONYM_GROUPS: list[set[str]] = [
     {"refresh", "reload", "sync"},
     {"help", "about"},
     {"pause", "stop"},
+    {"clear", "reset", "c", "ac"},
 ]
 # Build word -> synonym-set lookup. Uses union-merge (not plain overwrite)
 # so a word appearing in two groups keeps synonyms from BOTH — a plain
@@ -92,6 +98,7 @@ class NavResult:
     app: object | None = None
     reason: str = ""
     candidates_considered: int = 0
+    value: str = ""
 
 
 # ── Tree walking ─────────────────────────────────────────────────────────────
@@ -108,7 +115,8 @@ def _walk(node: object, depth: int = 0) -> Iterator[object]:
     for i in range(child_count):
         try:
             child = node.getChildAtIndex(i)  # type: ignore[union-attr]
-        except Exception:
+        except Exception as child_err:
+            logger.debug(f"_walk: child {i} unreadable: {child_err}")
             continue
         yield from _walk(child, depth + 1)
 
@@ -127,6 +135,16 @@ def _name(node: object) -> str:
         return ""
 
 
+def _text_content(node: object) -> str:
+    """Return live accessible text for unnamed displays and document nodes."""
+    try:
+        dynamic_node: Any = node
+        text = dynamic_node.queryText()
+        return str(text.getText(0, text.characterCount) or "").strip().lower()
+    except Exception:
+        return ""
+
+
 # ── Waiting for an app to appear ─────────────────────────────────────────────
 
 def wait_for_app(app_frags: list[str], timeout: float = _DEFAULT_TIMEOUT) -> object | None:
@@ -137,6 +155,19 @@ def wait_for_app(app_frags: list[str], timeout: float = _DEFAULT_TIMEOUT) -> obj
     `_await_node()` and atspi_utils.py's `wait_for_app()` — reused/aligned
     here rather than re-invented.
     """
+    # Normalize away spaces/hyphens/underscores before comparing: the AT-SPI
+    # app.name for a running process is very often its hyphenated binary
+    # name (e.g. "gnome-text-editor"), while callers naturally pass the
+    # human .desktop Name= ("text editor", with a space) -- a naive
+    # substring check between those never matches. Confirmed live: opening
+    # "Text Editor" and calling wait_for_app(["text editor"]) returned None
+    # even though the app was genuinely running and visible in AT-SPI as
+    # 'gnome-text-editor', silently breaking type_text.py's app-targeted
+    # focus step (it fell back to typing into whatever else had focus).
+    def _norm(s: str) -> str:
+        return s.lower().replace(" ", "").replace("-", "").replace("_", "")
+
+    norm_frags = [_norm(f) for f in app_frags]
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
@@ -145,10 +176,11 @@ def wait_for_app(app_frags: list[str], timeout: float = _DEFAULT_TIMEOUT) -> obj
             for app in desktop:
                 if app is None:
                     continue
-                if any(frag in (app.name or "").lower() for frag in app_frags):
+                norm_name = _norm(app.name or "")
+                if any(frag in norm_name for frag in norm_frags):
                     return app
-        except Exception:
-            pass
+        except Exception as poll_err:
+            logger.debug(f"wait_for_app: AT-SPI poll failed: {poll_err}")
         time.sleep(_POLL_INTERVAL)
     return None
 
@@ -180,11 +212,13 @@ def wait_for_node(
                 for node in _walk(app):
                     if role_filter is not None and _role(node) not in role_filter:
                         continue
-                    if name_contains is not None and name_contains.lower() not in _name(node):
-                        continue
+                    if name_contains is not None:
+                        searchable = f"{_name(node)} {_text_content(node)}".strip()
+                        if name_contains.lower() not in searchable:
+                            continue
                     return app, node
-        except Exception:
-            pass
+        except Exception as poll_err:
+            logger.debug(f"wait_for_node: AT-SPI poll failed: {poll_err}")
         time.sleep(_POLL_INTERVAL)
     return None, None
 
@@ -226,7 +260,7 @@ def _score_node(node: object, keywords: set[str]) -> float:
     labelled "Add Directory" (see _SYNONYM_GROUPS) — mitigation, not a
     guarantee, since not every possible label variant is covered.
     """
-    text = _name(node)
+    text = f"{_name(node)} {_text_content(node)}".strip()
     if not text or not keywords:
         return 0.0
     node_words = set(re.findall(r"[a-z0-9]+", text))
@@ -310,28 +344,19 @@ def _try_focus_app(app: object, timeout: float = 1.0) -> bool:
     when focus couldn't be confirmed.
     """
     try:
+        # Keep all Wayland focus mechanics in one place.  The window task
+        # refreshes stale AT-SPI frame objects, uses safe frame activation,
+        # and never treats a dialog's default button as a focus control.
+        from tasks.window_management import _focus_frame
+
         for i in range(app.childCount):  # type: ignore[union-attr]
             frame = app.getChildAtIndex(i)  # type: ignore[union-attr]
-            if frame is None:
+            if frame is None or _role(frame) not in ("frame", "dialog", "window", "alert"):
                 continue
-            if _role(frame) not in ("frame", "dialog", "window", "alert"):
-                continue
-            try:
-                frame.queryComponent().grabFocus()  # type: ignore[union-attr]
-            except Exception:
-                return False
-            import pyatspi
-            deadline = time.time() + timeout
-            while time.time() < deadline:
-                try:
-                    if frame.getState().contains(pyatspi.STATE_ACTIVE):  # type: ignore[union-attr]
-                        return True
-                except Exception:
-                    return False
-                time.sleep(0.05)
-            return False
-    except Exception:
-        pass
+            if _focus_frame(frame, timeout=timeout):
+                return True
+    except Exception as exc:
+        logger.debug(f"AT-SPI application focus failed: {exc}")
     return False
 
 
@@ -416,9 +441,277 @@ def type_by_intent(
     )
 
 
+def read_by_intent(
+    app_frags: list[str],
+    phrase: str,
+    app_timeout: float = _DEFAULT_TIMEOUT,
+) -> NavResult:
+    """Read a specifically matched accessible value without changing UI state."""
+    app = wait_for_app(app_frags, timeout=app_timeout)
+    if app is None:
+        return NavResult(False, reason=f"app not found within {app_timeout}s: {app_frags}")
+    node, considered = find_best_match(app, phrase, role_filter=READABLE_ROLES)
+    if node is None:
+        return NavResult(
+            False,
+            app=app,
+            candidates_considered=considered,
+            reason=f"no readable element matched {phrase!r}",
+        )
+    value = ""
+    try:
+        dynamic_node: Any = node
+        text = dynamic_node.queryText()
+        value = text.getText(0, text.characterCount).strip()
+    except Exception:
+        try:
+            value = str(node.name or "").strip()  # type: ignore[union-attr]
+        except Exception:
+            value = ""
+    if not value:
+        return NavResult(
+            False,
+            node=node,
+            app=app,
+            candidates_considered=considered,
+            reason=f"matched readable element for {phrase!r} had no value",
+        )
+    return NavResult(
+        True,
+        node=node,
+        app=app,
+        candidates_considered=considered,
+        value=value,
+    )
+
+
 def wait_for_dialog(app_frags: list[str], timeout: float = _DEFAULT_TIMEOUT) -> tuple[object | None, object | None]:
     """Convenience wrapper: wait for a dialog/alert to appear within an app."""
     return wait_for_node(app_frags, role_filter=DIALOG_ROLES, timeout=timeout)
+
+
+# ── ATSPINavigator — object API over the helpers above ─────────────────────
+
+class ATSPIElement:
+    """Stable wrapper over a pyatspi node: never raises on property access.
+
+    Capabilities access `.name`, `.role` and `.extents` (with `.x/.y/.width/`
+    `.height` in screen coordinates), so defunct/remote nodes must degrade
+    to empty values instead of raising.
+    """
+
+    __slots__ = ("_node",)
+
+    def __init__(self, node: object) -> None:
+        self._node = node
+
+    @property
+    def name(self) -> str:
+        try:
+            return str(self._node.name or "")  # type: ignore[union-attr]
+        except Exception:
+            return ""
+
+    @property
+    def role(self) -> str:
+        return _role(self._node)
+
+    @property
+    def extents(self) -> object | None:
+        """Screen-coordinate bounding box, or None if unavailable."""
+        try:
+            component = self._node.queryComponent()  # type: ignore[union-attr]
+            box = component.getExtents(1)  # 1 == XY_SCREEN in pyatspi
+            # Normalise to a plain object with x/y/width/height so callers
+            # can use getattr without knowing pyatspi's BoundingBox type.
+            return type("Extents", (), {
+                "x": int(box.x), "y": int(box.y),
+                "width": int(box.width), "height": int(box.height),
+            })()
+        except Exception:
+            return None
+
+    def text(self) -> str:
+        """Live accessible text content (queryText), may be empty."""
+        return _text_content(self._node)
+
+    def __repr__(self) -> str:  # pragma: no cover — debugging aid
+        return f"ATSPIElement(name={self.name!r}, role={self.role!r})"
+
+
+class ATSPINavigator:
+    """Read/query side of the AT-SPI tree for the capability layer.
+
+    Writing (click/type) goes through click_by_intent()/type_by_intent()
+    above; this class covers the observation API the capabilities expect:
+    find_elements, find_element, get_all_text, dump_visible_text,
+    read_field_value, get_desktop_summary.
+
+    Every method degrades gracefully: on AT-SPI unavailability or a defunct
+    node they return empty results rather than raising, so capability
+    wrappers can report "not found" instead of crashing.
+    """
+
+    def __init__(self, app_timeout: float = _DEFAULT_TIMEOUT) -> None:
+        self.app_timeout = app_timeout
+
+    # ── app iteration ─────────────────────────────────────────────────────
+
+    def _iter_apps(self, app_name: str | None) -> list[object]:
+        """All desktop apps, or those whose normalised name contains
+        `app_name` (same normalisation as wait_for_app)."""
+        try:
+            import pyatspi
+            desktop = pyatspi.Registry.getDesktop(0)
+            apps = [a for a in desktop if a is not None]
+        except Exception as exc:
+            logger.debug(f"ATSPINavigator: desktop unavailable: {exc}")
+            return []
+        if not app_name:
+            return apps
+        needle = app_name.lower().replace(" ", "").replace("-", "").replace("_", "")
+        matched = []
+        for app in apps:
+            hay = str(app.name or "").lower().replace(" ", "").replace("-", "").replace("_", "")
+            if needle and needle in hay:
+                matched.append(app)
+        return matched
+
+    # ── search API ────────────────────────────────────────────────────────
+
+    def find_elements(
+        self,
+        name: str | None = None,
+        role: str | None = None,
+        app_name: str | None = None,
+        limit: int = 50,
+    ) -> list[ATSPIElement]:
+        """Elements whose accessible name contains `name` (case-insensitive)
+        and whose role equals `role`, across all apps or one app."""
+        results: list[ATSPIElement] = []
+        needle = (name or "").lower()
+        for app in self._iter_apps(app_name):
+            for node in _walk(app):
+                if needle and needle not in _name(node):
+                    continue
+                if role and _role(node) != role.lower():
+                    continue
+                results.append(ATSPIElement(node))
+                if len(results) >= limit:
+                    return results
+        return results
+
+    def find_element(self, app_name: str | None = None, text: str | None = None) -> ATSPIElement | None:
+        """First element whose name OR live text content contains `text`."""
+        if not text:
+            return None
+        needle = text.lower()
+        for app in self._iter_apps(app_name):
+            for node in _walk(app):
+                if needle in _name(node) or needle in _text_content(node):
+                    return ATSPIElement(node)
+        return None
+
+    # ── text dump API ────────────────────────────────────────────────────
+
+    def get_all_text(self, app_name: str | None = None) -> list[str]:
+        """Readable text values across the desktop (or one app)."""
+        texts: list[str] = []
+        for app in self._iter_apps(app_name):
+            for node in _walk(app):
+                if _role(node) not in READABLE_ROLES:
+                    continue
+                value = _text_content(node) or _name(node)
+                if value:
+                    texts.append(value)
+        return texts
+
+    def dump_visible_text(self, app_name: str | None = None) -> str | None:
+        """Joined readable text, or None when nothing was readable.
+
+        None (not "") signals "text dump unavailable" so verification
+        callers can distinguish a genuinely empty screen from a failure."""
+        texts = self.get_all_text(app_name=app_name)
+        return "\n".join(texts) if texts else None
+
+    def read_field_value(self, app_name: str | None = None, field_name: str | None = None) -> str | None:
+        """Value of the text-entry field best matching `field_name`."""
+        apps = self._iter_apps(app_name)
+        if not apps:
+            return None
+        # Prefer a named match, fall back to the first entry field.
+        fallback: object | None = None
+        for app in apps:
+            for node in _walk(app):
+                if _role(node) not in TEXT_ENTRY_ROLES:
+                    continue
+                if fallback is None:
+                    fallback = node
+                if field_name and field_name.lower() in _name(node):
+                    value = _text_content(node)
+                    if value:
+                        return value
+        if fallback is not None:
+            value = _text_content(fallback)
+            return value or None
+        return None
+
+    # ── desktop summary API ──────────────────────────────────────────────
+
+    def get_desktop_summary(self, per_app_node_limit: int = 40) -> dict[str, Any]:
+        """Bounded per-app summary: app name, frame count, and a sample of
+        element names/roles — enough to reason about the screen without
+        dumping the entire tree."""
+        summary: dict[str, Any] = {"apps": []}
+        for app in self._iter_apps(None):
+            app_entry: dict[str, Any] = {
+                "name": str(app.name or ""),
+                "elements": [],
+            }
+            count = 0
+            for node in _walk(app):
+                count += 1
+                if len(app_entry["elements"]) < per_app_node_limit:
+                    role = _role(node)
+                    name = _name(node)
+                    if role or name:
+                        app_entry["elements"].append({"role": role, "name": name[:80]})
+            app_entry["node_count"] = count
+            summary["apps"].append(app_entry)
+        summary["app_count"] = len(summary["apps"])
+        return summary
+
+    # ── active window (Wayland-safe) ─────────────────────────────────────
+
+    def get_active_window(self) -> dict[str, Any] | None:
+        """Best-effort active window via AT-SPI ACTIVE/FOCUSED frame state.
+
+        xdotool's _NET_ACTIVE_WINDOW query fails on native Wayland (it can
+        only see XWayland clients), so this walks the desktop for a frame/
+        window/dialog node holding the ACTIVE or FOCUSED state."""
+        try:
+            import pyatspi
+            state_active = pyatspi.STATE_ACTIVE
+            state_focused = pyatspi.STATE_FOCUSED
+        except Exception:
+            return None
+        best: dict[str, Any] | None = None
+        for app in self._iter_apps(None):
+            for node in _walk(app):
+                if _role(node) not in ("frame", "window", "dialog", "alert"):
+                    continue
+                try:
+                    # pyatspi API is getState().contains() — getStateSet()
+                    # does not exist on Atspi.Accessible.
+                    states = node.getState()  # type: ignore[union-attr]
+                    if states.contains(state_active):
+                        return {"app": str(app.name or ""), "title": _name(node), "state": "active"}
+                    if states.contains(state_focused) and best is None:
+                        best = {"app": str(app.name or ""), "title": _name(node), "state": "focused"}
+                except Exception as state_err:
+                    logger.debug(f"get_active_window: state query failed: {state_err}")
+                    continue
+        return best
 
 
 if __name__ == "__main__":

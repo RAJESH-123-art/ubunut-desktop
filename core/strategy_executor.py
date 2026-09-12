@@ -22,8 +22,9 @@ Usage:
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from loguru import logger
 
@@ -38,7 +39,7 @@ from core.verifier import VerifySpec, verifier
 class Strategy:
     """One specific way to accomplish a task."""
     name: str
-    fn: Callable[[dict, dict], bool]          # (args, resources) → success bool
+    fn: Callable[[dict[str, Any], dict[str, Any]], object]  # bool or TaskResult
     verify_spec: VerifySpec | None = None     # what to check after running
     retry_wait: float = 2.0                   # seconds to wait before next strategy
     max_retries: int = 0                      # extra retries WITHIN this strategy (0 = try once)

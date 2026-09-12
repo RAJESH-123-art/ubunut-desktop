@@ -25,6 +25,7 @@ from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
 
 from core.cdp_browser import CDP_URL, close_cdp_chrome, ensure_chrome_cdp, sync_profile
+from core.task_contract import TaskResult
 
 
 def _arg_str(args: dict[str, object], key: str, default: str = "") -> str:
@@ -33,13 +34,56 @@ def _arg_str(args: dict[str, object], key: str, default: str = "") -> str:
     return value if isinstance(value, str) else default
 
 
+def _verify_outgoing_message(
+    page,
+    expected_text: str = "",
+    timeout: float = 8.0,
+    minimum_index: int = 0,
+) -> dict[str, object] | None:
+    """Verify a newly-created outgoing bubble and its bubble-scoped status icon."""
+    deadline = time.monotonic() + timeout
+    expected = " ".join(expected_text.split()).strip()
+    while time.monotonic() < deadline:
+        outgoing = page.locator("div.message-out")
+        count = outgoing.count()
+        lower_bound = max(minimum_index - 1, count - 8, -1)
+        for index in range(count - 1, lower_bound, -1):
+            bubble = outgoing.nth(index)
+            try:
+                bubble_text = " ".join((bubble.inner_text() or "").split()).strip()
+                if expected:
+                    message_texts = {
+                        " ".join(text.split()).strip()
+                        for text in bubble.locator("span.selectable-text").all_inner_texts()
+                    }
+                    if expected not in message_texts:
+                        continue
+                indicator = bubble.locator(
+                    'span[data-icon="msg-check"], '
+                    'span[data-icon="msg-dblcheck"], '
+                    'span[data-icon="msg-dblcheck-ack"]'
+                ).last
+                if indicator.count() == 0 or not indicator.is_visible(timeout=500):
+                    continue
+                icon = indicator.get_attribute("data-icon") or "unknown"
+                return {
+                    "outgoing_text": expected or bubble_text,
+                    "delivery_icon": icon,
+                    "delivery_confirmed": True,
+                }
+            except PlaywrightError:
+                continue
+        time.sleep(0.25)
+    return None
+
+
 def setup() -> dict[str, object]:
     """Setup resources."""
     logger.info("Setting up WhatsApp automation (real Chrome profile via CDP)")
     return {}
 
 
-def execute(args: dict[str, object], _resources: dict[str, object]) -> bool:
+def execute(args: dict[str, object], _resources: dict[str, object]) -> TaskResult:
     """
     Send a WhatsApp message using your real logged-in Chrome.
 
@@ -110,23 +154,16 @@ def execute(args: dict[str, object], _resources: dict[str, object]) -> bool:
                         continue
                 if not search_box:
                     logger.error("Could not find WhatsApp search box")
-                    return False
+                    return TaskResult(False, error="Could not find WhatsApp search box")
 
                 _ = search_box.click()
                 time.sleep(0.5)
                 _ = search_box.fill(contact)
                 time.sleep(2)  # let results appear
 
-                # SAFETY: verify the top search result plausibly matches the
-                # requested contact BEFORE pressing Enter. Previously this
-                # pressed Enter blindly on whatever the top result happened
-                # to be — a stale/ambiguous/wrong result would silently get
-                # messaged instead of the intended person. Best-effort: if
-                # the result text can't be read at all (WhatsApp Web's DOM
-                # structure isn't guaranteed stable across versions), we
-                # proceed with a clear warning rather than block a
-                # legitimate send — we only ABORT on a confident mismatch,
-                # never on "couldn't verify."
+                # Verify the top result before selecting it. An unreadable or
+                # ambiguous recipient fails closed rather than risking a send
+                # to the wrong chat.
                 result_name = ""
                 for result_sel in [
                     '#pane-side span[dir="auto"][title]',
@@ -153,20 +190,48 @@ def execute(args: dict[str, object], _resources: dict[str, object]) -> bool:
                             f"contact {contact!r} — refusing to send to avoid messaging "
                             f"the wrong person. Try a more specific contact name."
                         )
-                        return False
+                        return TaskResult(False, error="Search result did not match requested contact")
                     logger.info(f"✅ Search result {result_name!r} matches requested contact {contact!r}")
                 else:
-                    logger.warning(
-                        "Could not read the search result name to verify the contact match — "
-                        "proceeding anyway, but double-check this sent to the right person."
+                    logger.error(
+                        "Could not read the search result name — refusing to send because "
+                        "the recipient cannot be verified."
                     )
+                    return TaskResult(False, error="Could not verify search result recipient")
 
                 _ = page.keyboard.press("Enter")
                 time.sleep(2)
+                selected_chat = ""
+                for header_sel in (
+                    'header span[title][dir="auto"]',
+                    'header [data-testid="conversation-info-header-chat-title"]',
+                ):
+                    try:
+                        header = page.locator(header_sel).first
+                        if header.is_visible(timeout=1500):
+                            selected_chat = (
+                                header.get_attribute("title") or header.inner_text() or ""
+                            ).strip()
+                            if selected_chat:
+                                break
+                    except PlaywrightError:
+                        continue
+                if not selected_chat or not (
+                    contact.lower() in selected_chat.lower()
+                    or selected_chat.lower() in contact.lower()
+                ):
+                    logger.error(
+                        f"Selected chat {selected_chat!r} does not verify requested contact {contact!r}"
+                    )
+                    return TaskResult(False, error="Opened chat did not match requested recipient")
+
+            delivery_evidence: dict[str, object] | None = None
 
             # If an image or media file is provided, send the media file
             media_path = _arg_str(args, "media_path").strip() or _arg_str(args, "image_path").strip()
-            if media_path and Path(media_path).exists():
+            if media_path and not Path(media_path).is_file():
+                return TaskResult(False, error=f"Requested media file does not exist: {media_path}")
+            if media_path:
                 logger.info(f"Attaching media file: {media_path}")
                 # WhatsApp Web has file input elements (hidden in DOM or attached to clip icon)
                 file_input = page.locator('input[type="file"]').first
@@ -194,6 +259,9 @@ def execute(args: dict[str, object], _resources: dict[str, object]) -> bool:
                             time.sleep(0.5)
                     except PlaywrightError:
                         pass
+
+                # Only bubbles created after this point may prove this send.
+                outgoing_before_send = page.locator("div.message-out").count()
 
                 # Click Send button on image preview
                 logger.info("Sending attached media...")
@@ -240,8 +308,18 @@ def execute(args: dict[str, object], _resources: dict[str, object]) -> bool:
                     except PlaywrightError:
                         pass
 
-                logger.info("Waiting 8 seconds for image upload and delivery to complete...")
-                time.sleep(8)
+                logger.info("Waiting for media message delivery evidence...")
+                delivery_evidence = _verify_outgoing_message(
+                    page,
+                    message if message and message != "hi" else "",
+                    timeout=10.0,
+                    minimum_index=outgoing_before_send,
+                )
+                if delivery_evidence is None:
+                    return TaskResult(
+                        False,
+                        error="Media send was not confirmed in an outgoing message container",
+                    )
             else:
                 # Standard text message
                 logger.info("Locating message input box...")
@@ -264,42 +342,57 @@ def execute(args: dict[str, object], _resources: dict[str, object]) -> bool:
                         continue
                 if not msg_box:
                     logger.error("Could not find message input box (chat may not have opened)")
-                    return False
+                    return TaskResult(False, error="Could not find message input box")
 
                 logger.info(f"Typing and sending: '{message}'")
                 _ = msg_box.click()
                 time.sleep(0.3)
                 _ = msg_box.fill(message)
                 time.sleep(0.5)
+                outgoing_before_send = page.locator("div.message-out").count()
                 _ = page.keyboard.press("Enter")
                 time.sleep(2)
 
-                # Verify: wait for sent indicator (✓ or ✓✓)
-                time.sleep(1.5)
-                try:
-                    sent_indicator = page.locator(
-                        'span[data-icon="msg-check"], '
-                        'span[data-icon="msg-dblcheck"], '
-                        'span[data-icon="msg-dblcheck-ack"]'
-                    ).first
-                    if sent_indicator.is_visible(timeout=4000):
-                        logger.info("✅ Message delivery confirmed (checkmark visible)")
-                    else:
-                        logger.warning("⚠️  Send indicator not detected — message may still be sending")
-                except Exception:
-                    logger.debug("Delivery indicator check skipped")
+                delivery_evidence = _verify_outgoing_message(
+                    page,
+                    message,
+                    timeout=8.0,
+                    minimum_index=outgoing_before_send,
+                )
+                if delivery_evidence is None:
+                    logger.error("Exact outgoing message bubble with delivery indicator was not found")
+                    return TaskResult(
+                        False,
+                        error="Exact sent message and delivery indicator were not confirmed",
+                    )
+                logger.info(
+                    f"✅ Message delivery confirmed ({delivery_evidence['delivery_icon']})"
+                )
 
             # Confirmation screenshot
             ss_dir = Path(__file__).parent.parent / "logs" / "screenshots"
             ss_dir.mkdir(parents=True, exist_ok=True)
             ss_path = ss_dir / f"whatsapp_sent_{int(time.time())}.png"
             _ = page.screenshot(path=str(ss_path))
-            logger.info(f"✅ WhatsApp action complete to '{contact or phone}'! Screenshot: {ss_path}")
-            return True
+            recipient = contact or f"+{phone}"
+            logger.info(f"✅ WhatsApp action complete to '{recipient}'! Screenshot: {ss_path}")
+            return TaskResult(
+                True,
+                data={
+                    "recipient": recipient,
+                    "screenshot": str(ss_path),
+                    "delivery": delivery_evidence or {},
+                },
+                evidence=[
+                    {"kind": "recipient", "value": recipient},
+                    {"kind": "message_delivery", **(delivery_evidence or {})},
+                    {"kind": "screenshot", "path": str(ss_path)},
+                ],
+            )
 
         except (OSError, PlaywrightError) as exc:
             logger.error(f"WhatsApp automation failed: {exc}")
-            return False
+            return TaskResult(False, error=str(exc))
         finally:
             # Only close the tab we opened — leave the user's browser running
             try:

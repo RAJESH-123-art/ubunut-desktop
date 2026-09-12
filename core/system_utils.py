@@ -2,12 +2,51 @@ import os
 import shlex
 import shutil
 import subprocess
+import time
+from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from loguru import logger
 
 from .logger import IS_WAYLAND, log_action
+
+_GTK_CLIPBOARD: object | None = None
+
+
+def _gtk_clipboard() -> object | None:
+    """Return the live desktop clipboard without requiring an external tool."""
+    global _GTK_CLIPBOARD
+    try:
+        import gi
+
+        gi.require_version("Gdk", "3.0")
+        gi.require_version("Gtk", "3.0")
+        from gi.repository import Gdk, Gtk
+
+        if Gdk.Display.get_default() is None:
+            return None
+        _GTK_CLIPBOARD = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        return _GTK_CLIPBOARD
+    except Exception as exc:
+        logger.debug(f"GTK clipboard is unavailable: {exc}")
+        return None
+
+
+def _flush_gtk_events() -> None:
+    try:
+        import gi
+
+        gi.require_version("Gtk", "3.0")
+        from gi.repository import Gtk
+
+        deadline = time.monotonic() + 0.25
+        while Gtk.events_pending() and time.monotonic() < deadline:
+            Gtk.main_iteration_do(False)
+    except Exception as gtk_err:
+        # GTK clipboard drain is best-effort — a missing Gtk or no display
+        # just means no clipboard synchronisation, never a hard failure.
+        logger.debug(f"_drain_gtk_events: GTK event drain failed: {gtk_err}")
 
 
 def command_output(command: str, shell: bool = True, capture: bool = True, **kwargs) -> str:
@@ -71,6 +110,15 @@ def env_check() -> Dict[str, Any]:
             "scrot": bool(shutil.which("scrot")),
             "notify-send": bool(shutil.which("notify-send")),
         },
+        "python_packages": {
+            "loguru": find_spec("loguru") is not None,
+            "yaml": find_spec("yaml") is not None,
+            "playwright": find_spec("playwright") is not None,
+            "openai": find_spec("openai") is not None,
+            "evdev": find_spec("evdev") is not None,
+            "pyatspi": find_spec("pyatspi") is not None,
+            "cv2": find_spec("cv2") is not None,
+        },
         "is_wayland": IS_WAYLAND,
     }
     return caps
@@ -97,24 +145,63 @@ def open_terminal(path: Path) -> None:
     raise RuntimeError("No terminal emulator found")
 
 
-def clipboard_set(text: str) -> None:
-    """Set clipboard content (Wayland via wl-copy, X11 via xclip)."""
+def clipboard_set(text: str) -> bool:
+    """Set clipboard content through wl-copy, xclip, or the live GTK session."""
     if shutil.which("wl-copy"):
-        command(f'echo -n {shlex.quote(text)} | wl-copy')
+        # wl-copy forks a daemon that serves the clipboard offer and KEEPS
+        # the inherited stdout/stderr open forever — with capture_output=True
+        # subprocess.run() blocks waiting for pipe EOF long after wl-copy
+        # itself exits (verified live: rc=0 instantly when piped to /dev/null,
+        # hang with captured pipes). Detach the daemon's stdio and do not
+        # capture so this returns as soon as wl-copy exits.
+        with open(os.devnull, "wb") as devnull:
+            result = subprocess.run(
+                ["wl-copy", "--", text],
+                check=False,
+                stdout=devnull,
+                stderr=devnull,
+                stdin=subprocess.DEVNULL,
+            )
+        return result.returncode == 0
     elif shutil.which("xclip"):
-        command(f'echo -n {shlex.quote(text)} | xclip -selection clipboard')
-    else:
-        logger.warning("Neither wl-copy nor xclip found for clipboard_set")
+        result = subprocess.run(
+            ["xclip", "-selection", "clipboard"],
+            input=text,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        return result.returncode == 0
+    clipboard = _gtk_clipboard()
+    if clipboard is None:
+        logger.warning("No Wayland/X11/GTK clipboard backend is available")
+        return False
+    try:
+        clipboard.set_text(text, -1)  # type: ignore[union-attr]
+        clipboard.store()  # type: ignore[union-attr]
+        _flush_gtk_events()
+        return True
+    except Exception as exc:
+        logger.warning(f"GTK clipboard set failed: {exc}")
+        return False
 
 
 def clipboard_get() -> str:
-    """Get clipboard content (Wayland via wl-paste, X11 via xclip)."""
+    """Get clipboard content through wl-paste, xclip, or the live GTK session."""
     if shutil.which("wl-paste"):
-        return command_output("wl-paste")
+        return command_output("wl-paste --no-newline")
     elif shutil.which("xclip"):
         return command_output("xclip -selection clipboard -o")
-    else:
-        logger.warning("Neither wl-paste nor xclip found for clipboard_get")
+    clipboard = _gtk_clipboard()
+    if clipboard is None:
+        logger.warning("No Wayland/X11/GTK clipboard backend is available")
+        return ""
+    try:
+        value = clipboard.wait_for_text()  # type: ignore[union-attr]
+        _flush_gtk_events()
+        return str(value or "")
+    except Exception as exc:
+        logger.warning(f"GTK clipboard read failed: {exc}")
         return ""
 
 
@@ -125,7 +212,7 @@ def file_size(path: Path) -> int:
         return 0
 
 
-def file_modified(path: Path) -> Optional[float]:
+def file_modified(path: Path) -> float | None:
     try:
         return path.stat().st_mtime
     except OSError:

@@ -19,6 +19,8 @@ env/
 logs/*.log
 *.log
 logs/screenshots/*.png
+logs/ai_plans/
+logs/structured_sessions/
 
 # IDE
 .vscode/

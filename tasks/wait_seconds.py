@@ -6,6 +6,7 @@ Useful between multi-step workflows where the UI needs time to react.
 Args:
     seconds (int|float): How long to wait. Must be 0–300. Default: 1.
 """
+import math
 import time
 
 from loguru import logger
@@ -30,6 +31,8 @@ def execute(args: dict, resources: dict) -> bool:
         except (TypeError, ValueError):
             raise ValueError(f"'seconds' must be a number, got {raw!r}")
 
+        if not math.isfinite(seconds):
+            raise ValueError(f"'seconds' must be finite, got {seconds}")
         if seconds < 0:
             raise ValueError(f"'seconds' must be ≥ 0, got {seconds}")
         if seconds > _MAX_WAIT:

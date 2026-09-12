@@ -20,6 +20,7 @@ from pathlib import Path
 from loguru import logger
 
 from core.logger import finish, notify, start
+from core.task_contract import TaskResult
 
 
 def _resolve_location(location_arg: str) -> Path:
@@ -46,7 +47,7 @@ def setup() -> dict:
     return {}
 
 
-def execute(args: dict, resources: dict) -> bool:
+def execute(args: dict, resources: dict) -> TaskResult:
     task_name = "create_folder"
     start(task_name)
     try:
@@ -57,10 +58,14 @@ def execute(args: dict, resources: dict) -> bool:
         if not folder_name:
             logger.warning("'folder_name' is empty — nothing to create")
             finish("error", task_name)
-            return False
+            return TaskResult(False, error="folder_name is required")
 
-        location   = _resolve_location(location_arg)
-        full_path  = location / folder_name
+        name_path = Path(folder_name)
+        if name_path.is_absolute() or len(name_path.parts) != 1 or folder_name in (".", ".."):
+            raise ValueError("'folder_name' must be one plain directory name, not a path")
+
+        location = _resolve_location(location_arg).resolve()
+        full_path = location / folder_name
 
         logger.info(f"Creating folder: {full_path}")
         full_path.mkdir(parents=True, exist_ok=True)
@@ -75,7 +80,11 @@ def execute(args: dict, resources: dict) -> bool:
         logger.info(f"✅ Folder created: {full_path}")
         notify(f"Created folder: {folder_name}")
         finish("success", task_name)
-        return True
+        return TaskResult(
+            True,
+            data={"path": str(full_path)},
+            evidence=[{"kind": "directory", "path": str(full_path)}],
+        )
 
     except Exception as exc:
         finish("error", task_name, err=exc)

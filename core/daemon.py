@@ -14,20 +14,19 @@ Config:
     Triggers loaded from config/triggers.yaml on start.
 """
 from __future__ import annotations
+
 import signal
-import sys
 import threading
 import time
-import yaml
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+
+import yaml
 from loguru import logger
 
-from core.trigger_engine import Trigger, create_trigger_from_dict
 from core.goal_planner import goal_planner
 from core.parallel_runner import ParallelRunner
-from core.world_model import world
-
+from core.trigger_engine import Trigger, create_trigger_from_dict
 
 POLL_INTERVAL = 5.0           # check triggers every 5 seconds
 TRIGGERS_FILE = Path("config/triggers.yaml")
@@ -37,7 +36,7 @@ class AgentDaemon:
     def __init__(self) -> None:
         self._triggers: List[Trigger] = []
         self._running = False
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._runner = ParallelRunner(max_workers=4)
         self._shutdown_event = threading.Event()
 
@@ -143,13 +142,30 @@ class AgentDaemon:
                 if isinstance(value, (str, int, float)):
                     final_goal = final_goal.replace(f"{{{key}}}", str(value))
             
-            logger.info(f"Daemon executing goal: {final_goal}")
+            logger.info(f"Daemon evaluating goal: {final_goal}")
             dag = goal_planner.plan(final_goal)
+
+            from core.action_policy import requires_approval
+            consequential = sorted({
+                node.intent
+                for node in dag.nodes.values()
+                if requires_approval(node.intent, node.args)
+            })
+            if consequential:
+                logger.error(
+                    "Daemon refused goal containing consequential actions without "
+                    f"interactive approval: {', '.join(consequential)}"
+                )
+                return
             
             # Build executor builder for parallel runner
             def executor_builder(intent: str, task_args: dict):
-                from core.smart_parser import ParsedIntent
+                if requires_approval(intent, task_args):
+                    raise PermissionError(
+                        f"Daemon recovery step {intent!r} requires interactive approval"
+                    )
                 from agent import _build_executor
+                from core.smart_parser import ParsedIntent
                 intent_obj = ParsedIntent(
                     intent=intent,
                     params=task_args,

@@ -18,6 +18,8 @@ from typing import cast
 
 from loguru import logger
 
+from core.atomic_write import atomic_write_json
+
 # Stored values are heterogeneous by nature (JSON-shaped).
 StoredValue = str | int | float | bool | dict[str, object] | list[object] | None
 
@@ -40,8 +42,7 @@ def _load() -> dict[str, dict[str, object]]:
 
 
 def _save(data: dict[str, dict[str, object]]) -> None:
-    _STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _ = _STORE_PATH.write_text(json.dumps(data, indent=2, default=str))
+    atomic_write_json(_STORE_PATH, data)
 
 
 class Memory:

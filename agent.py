@@ -24,13 +24,48 @@ How it works (zero AI):
                       with exponential back-off retry
 """
 
+import os
 import sys
+import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from core.session import Session
+    from core.structured_automation import StructuredPlan
     from core.task_dag import TaskDAG
+
+
+def _load_secrets_env() -> None:
+    """
+    Load config/secrets.env (plain KEY=value, gitignored) into os.environ.
+
+    Without this, APINEX_API_KEY / NVIDIA_API_KEY only ever reach the
+    process when launched via scripts/agent_prompt.sh or the systemd service
+    (both `source` the file themselves) -- a direct `python agent.py "..."`
+    run from a terminal never saw them, silently disabling the AI tiers
+    (core/llm_planner.py Tier 5, core/semantic_vision.py Layer 4,
+    core/action_loop.py) even when a key was configured. That made the agent
+    look like it only ever runs the ~20 hardcoded deterministic intents.
+
+    Real exported env vars / systemd's EnvironmentFile= always win -- this
+    only fills in what isn't already set.
+    """
+    path = Path(__file__).resolve().parent / "config" / "secrets.env"
+    if not path.is_file():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_secrets_env()
 
 from loguru import logger
 
@@ -40,7 +75,6 @@ from core.verifier import (
     VerifySpec,
     app_installed_spec,
     browser_open_spec,
-    screenshot_taken_spec,
     whatsapp_open_spec,
 )
 from core.workflow_engine import WorkflowEngine
@@ -67,13 +101,9 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
 
         from core.app_registry import normalize_package
         pkg  = normalize_package(app)
-        # Load password from config so it’s always available
-        try:
-            from config.config_loader import load_config
-            _cfg = load_config()
-            _pwd = _cfg.get("install", {}).get("sudo_password", "")
-        except Exception:
-            _pwd = ""
+        # Privileged credentials must come from the process environment or an
+        # interactive policy agent, never tracked YAML configuration.
+        _pwd = os.getenv("AUTOMATION_SUDO_PASSWORD", "")
         args = {"app_name": app, "package_name": pkg, "password": _pwd}
         spec = app_installed_spec(pkg)
 
@@ -148,6 +178,21 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
                 if m and m.group(1).lower() not in _not_contact:
                     contact = m.group(1)
                 else:
+                    # SAFETY: only fall back to a default real contact when
+                    # the input literally, normalizedly mentions WhatsApp --
+                    # checked as an exact token, not fuzzy/substring scoring.
+                    # Without this guard, whatsapp_send can be reached by
+                    # keyword-overlap coincidence alone (e.g. "what apps are
+                    # running" scores whatsapp_send > 0 purely because "what"
+                    # is a literal prefix-substring of "whatsapp" and fuzzy-
+                    # matches "chat") and would otherwise silently send a
+                    # REAL message to a REAL contact on a total misparse.
+                    if "whatsapp" not in intent.normalized_input.split():
+                        raise ValueError(
+                            "whatsapp_send matched but no real contact could be "
+                            "extracted, and the input doesn't literally mention "
+                            "WhatsApp -- refusing to guess a default contact"
+                        )
                     contact = "darling"
 
         # ─ Step 2: Recover message — ALWAYS try greeting scan first ────────
@@ -185,14 +230,13 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
     # ── Screenshot ────────────────────────────────────────────────────────────
     if name in ("screenshot", "system_screenshot"):
         args = {}
-        spec = screenshot_taken_spec()
 
         def ss_fn(a, r):
             from tasks.system_screenshot import execute
             return execute(a, r)
 
         ex = StrategyExecutor("system_screenshot")
-        ex.add(Strategy("screenshot", ss_fn, verify_spec=spec, retry_wait=1))
+        ex.add(Strategy("screenshot", ss_fn, retry_wait=1))
         return ex, args, res
 
     # ── Open browser / visit URL ──────────────────────────────────────────────
@@ -210,8 +254,17 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
             url = m.group(0) if m else "https://www.google.com"
         if url and not url.startswith("http"):
             url = f"https://{url}"
-        args = {"url": url, "browser": "chromium", "screenshot": False}
-        spec = browser_open_spec()
+
+        # Respect a specific browser actually named in the request (e.g.
+        # "open firefox browser") instead of always hardcoding chromium.
+        # Without this, ANY mention of a browser name routes here (this is
+        # the generic open_browser intent) and the user's literal choice
+        # was being silently discarded in favor of Chrome every time.
+        browser_m = _re.search(r'\b(firefox|chromium|chrome|brave)\b', intent.raw_input, _re.IGNORECASE)
+        browser = browser_m.group(1).lower() if browser_m else "chromium"
+
+        args = {"url": url, "browser": browser, "screenshot": False}
+        spec = browser_open_spec(browser=browser if browser == "firefox" else "")
 
         def browser_fn(a, r):
             from tasks.open_browser_and_visit import execute
@@ -223,16 +276,24 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
 
     # ── Search web ────────────────────────────────────────────────────────────
     if name == "search_web":
+        import re as _re
         query = params.get("query", "").strip()
         url   = f"https://www.google.com/search?q={query.replace(' ', '+')}"
-        args  = {"url": url, "browser": "chromium", "screenshot": False}
+
+        # Same fix as open_browser/visit_url above: respect a specific
+        # browser named in the request (e.g. "search cats in firefox")
+        # instead of always hardcoding chromium.
+        browser_m = _re.search(r'\b(firefox|chromium|chrome|brave)\b', intent.raw_input, _re.IGNORECASE)
+        browser = browser_m.group(1).lower() if browser_m else "chromium"
+
+        args  = {"url": url, "browser": browser, "screenshot": False}
 
         def search_fn(a, r):
             from tasks.open_browser_and_visit import execute
             return execute(a, r)
 
         ex = StrategyExecutor("search_web")
-        ex.add(Strategy("search", search_fn, verify_spec=browser_open_spec(), retry_wait=3))
+        ex.add(Strategy("search", search_fn, verify_spec=browser_open_spec(browser=browser if browser == "firefox" else ""), retry_wait=3))
         return ex, args, res
 
     # ── Open app ──────────────────────────────────────────────────────────────
@@ -314,7 +375,7 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
         text = params.get("text", "").strip()
         if not text:
             raise ValueError("Could not extract text to type from your command")
-        args = {"text": text}
+        args = {"text": text, "app_name": params.get("app_name", "").strip()}
 
         def type_fn(a, r):
             from tasks.type_text import execute
@@ -373,7 +434,7 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
     # ── System power (shutdown / restart / suspend) ────────────────────────────────
     if name == "system_power":
         action = params.get("action", "shutdown").strip().lower() or "shutdown"
-        args   = {"action": action}
+        args   = {"action": action, "confirm": True}
 
         def power_fn(a, r):
             from tasks.system_power import execute
@@ -387,16 +448,9 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
     if name == "create_folder":
         folder_name = params.get("folder_name", "").strip()
         if not folder_name:
-            # No name extracted — likely a false positive (e.g. "make me a sandwich").
-            # Route to universal fallback instead of failing silently.
-            logger.info("create_folder: no folder name found — routing to universal fallback")
-            args = {"raw_command": intent.raw_input, "normalized": intent.normalized_input}
-            def _uf(a, r):
-                from tasks.universal_fallback import execute
-                return execute(a, r)
-            ex = StrategyExecutor("universal_fallback")
-            ex.add(Strategy("fallback", _uf, retry_wait=0))
-            return ex, args, res
+            # Do not silently substitute a broader executor here. The caller must
+            # authorize universal fallback using the exact parameters it executes.
+            raise ValueError("Could not extract folder name from your command")
 
         desktop = Path.home() / "Desktop"
         location = str(desktop if desktop.exists() else Path.home())
@@ -425,7 +479,7 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
             cmd = params.get("command", "").strip()   # normalized fallback
         if not cmd:
             raise ValueError("Could not extract command to run from your input")
-        args = {"command": cmd}
+        args = {"command": cmd, "authorized": True}
 
         def cmd_fn(a, r):
             from tasks.run_command import execute
@@ -524,14 +578,38 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
             import subprocess
             pname = a.get("process_name", "").strip()
             if not pname:
-                print("❌ No process name given")
+                print("\u274c No process name given")
                 return False
-                r = subprocess.run(["pkill", "-f", pname], capture_output=True, check=False)
 
-            if r.returncode == 0:
-                print(f"✅ Killed process: {pname}")
-                return True
-            print(f"⚠️  No process matching '{pname}' found")
+            # Resolve through the same full-application index open_app uses,
+            # so "kill gnome calculator process" or a fuzzy/partial name
+            # still targets the real binary (e.g. "gnome-calculator") instead
+            # of pkill -f-ing a raw, unmatched string that will never hit a
+            # real process (a hyphen vs. space mismatch alone would silently
+            # no-op otherwise).
+            candidates = [pname]
+            cleaned = pname
+            for filler in ("process", "app", "application", "window"):
+                cleaned = cleaned.replace(filler, "").strip()
+            if cleaned and cleaned != pname:
+                candidates.append(cleaned)
+
+            from core.app_finder import find_app
+            for candidate in candidates:
+                found = find_app(candidate)
+                if found:
+                    binary = found.exec_cmd.split()[0].split("/")[-1] if found.exec_cmd else ""
+                    if binary and binary not in candidates:
+                        candidates.append(binary)
+                    break
+
+            for candidate in candidates:
+                proc = subprocess.run(["pkill", "-f", candidate], capture_output=True, check=False)
+                if proc.returncode == 0:
+                    print(f"\u2705 Killed process matching: {candidate!r}")
+                    return True
+
+            print(f"\u26a0\ufe0f  No process matching any of {candidates} found")
             return False
 
         ex = StrategyExecutor("process_kill")
@@ -550,13 +628,11 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
             message = a.get("message", "")
             try:
                 subprocess.run(["notify-send", title, message], check=True)
-                print(f"✅ Notification sent: {title} — {message}")
+                print(f"\u2705 Notification sent: {title} \u2014 {message}")
                 return True
             except Exception as exc:
-                print(f"❌ Failed to send notification: {exc}")
+                print(f"\u274c Failed to send notification: {exc}")
                 return False
-
-            return execute(a, r)
 
         ex = StrategyExecutor("notify")
         ex.add(Strategy("notify", notify_fn, retry_wait=1))
@@ -606,35 +682,49 @@ def _build_executor(intent: ParsedIntent) -> tuple[StrategyExecutor, dict[str, A
         ex.add(Strategy("write", write_fn, retry_wait=1))
         return ex, args, res
 
-    # ── Unknown intent → universal fallback ──────────────────────────────────────────
-    logger.warning(f"No executor defined for intent {name!r} — routing to universal fallback")
-    # Prefer raw_command/normalized carried in params (set by SmartParser.parse_multi
-    # or GoalPlanner for clauses that matched no known intent) — falling back to
-    # intent.raw_input/normalized_input for direct/legacy callers.
-    args = {
-        "raw_command": params.get("raw_command", intent.raw_input),
-        "normalized": params.get("normalized", intent.normalized_input),
-    }
-
-    def unk_fn(a, r):
-        from tasks.universal_fallback import execute
-        return execute(a, r)
-
-    ex = StrategyExecutor("universal_fallback")
-    ex.add(Strategy("fallback", unk_fn, retry_wait=0))
-    return ex, args, res
+    # Never hide a broader fallback behind approval for a narrower parsed intent.
+    # `run_command` owns fallback authorization and binds it to exact parameters.
+    raise ValueError(f"No executor defined for intent {name!r}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # RUN ONE NATURAL LANGUAGE COMMAND
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_command(raw: str) -> bool:
+def run_command(
+    raw: str,
+    *,
+    approved_actions: set[str] | None = None,
+    approve_all: bool = False,
+    structured_plan_approver: Callable[["StructuredPlan"], bool] | None = None,
+) -> bool:
     """
     Parse a natural language string and execute with full self-healing.
     Supports compound commands: "install vlc and then open youtube".
     """
     import re as _re
+
+    from core.action_policy import approved, requires_approval
+
+    def is_approved(intent_name: str, params: dict[str, Any]) -> bool:
+        return approve_all or approved(intent_name, params, approved_actions)
+
+    def fallback_params(command: str, normalized: str | None = None) -> dict[str, Any]:
+        return {
+            "raw_command": command,
+            "normalized": normalized if normalized is not None else command,
+        }
+
+    def run_fallback(command: str, normalized: str | None = None) -> bool:
+        args = fallback_params(command, normalized)
+        if not is_approved("universal_fallback", args):
+            print("Refusing universal fallback without explicit approval for this exact command.")
+            return False
+        from tasks.universal_fallback import execute as _fallback
+        return bool(_fallback(args, {
+            "approve_all": approve_all,
+            "approval_callback": structured_plan_approver,
+        }))
 
     # ── Klavaro shortcut ──────────────────────────────────────────────────────────────
     # Intercept BEFORE parse_multi splits on "and"/"then".
@@ -664,7 +754,15 @@ def run_command(raw: str) -> bool:
         template = (_design_m.group("template") or "Instagram Story").strip()
         print(f"\n🎨 Design platform detected — {platform}, template: {template!r}")
         logger.info(f"Design-platform shortcut: platform={platform!r} template={template!r} from {raw!r}")
-        from tasks.canva_template import setup as _ct_setup, execute as _ct_exec, cleanup as _ct_cleanup
+        from tasks.canva_template import (
+            cleanup as _ct_cleanup,
+        )
+        from tasks.canva_template import (
+            execute as _ct_exec,
+        )
+        from tasks.canva_template import (
+            setup as _ct_setup,
+        )
         _res = _ct_setup()
         try:
             ok = _ct_exec({"platform": platform, "template": template}, _res)
@@ -672,6 +770,34 @@ def run_command(raw: str) -> bool:
             _ct_cleanup(_res)
         print(f"   {'✅ Done' if ok else '❌ Failed'}")
         return ok
+
+    # App-running-status shortcut (Step 4 of the Ubuntu-control build order:
+    # "detect running application" as a directly queryable capability, not
+    # just an internal post-launch check). Intercepted before smart_parser
+    # since no INTENT_DEFS entry cleanly separates this from open_app/
+    # window_close given how much keyword overlap ('open', 'running') exists.
+    _running_list_m = _re.search(
+        r'\b(list|show)\b.*\b(running|open)\s+(apps|applications)\b'
+        r'|\b(apps|applications)\b.*\b(are\s+)?(running|open)\b',
+        raw, _re.IGNORECASE,
+    )
+    if _running_list_m:
+        from core.app_state import list_running_apps
+        apps = list_running_apps()
+        print(f"\n\U0001f5a5\ufe0f  {len(apps)} running application(s):")
+        for a in apps:
+            print(f"  \u2022 {a}")
+        return True
+
+    _running_check_m = _re.search(
+        r'\bis\s+(?P<app>.+?)\s+(running|open)\b', raw, _re.IGNORECASE,
+    )
+    if _running_check_m:
+        app_name = _running_check_m.group("app").strip()
+        from core.app_state import is_app_running
+        running = is_app_running(app_name)
+        print(f"\n\U0001f5a5\ufe0f  {app_name!r} running? {'\u2705 yes' if running else '\u274c no'}")
+        return running
 
     # System info shortcut
     _sysinfo_pats = [
@@ -687,7 +813,7 @@ def run_command(raw: str) -> bool:
         from tasks.system_info import execute as _sysinfo
         ok = _sysinfo({"save_path": save_path}, {})
         print(f"   {'\u2705 Done' if ok else '\u274c Failed'}")
-        return ok
+        return bool(ok)
 
     intents = smart_parser.parse_multi(raw)
 
@@ -695,11 +821,74 @@ def run_command(raw: str) -> bool:
     # Only fires if the deterministic parse looks untrustworthy for this
     # input AND an NVIDIA_API_KEY is configured; otherwise fully inert and
     # behavior is unchanged from before this tier existed.
-    from core.llm_planner import llm_planner, looks_unreliable
-    if looks_unreliable(intents, raw) and llm_planner.available():
-        logger.info("run_command: deterministic parse looks unreliable for this input, trying AI planner (Tier 5)")
+    from core.llm_planner import (
+        is_confidently_resolvable_open_app,
+        llm_planner,
+        looks_gui_shaped,
+        looks_unreliable,
+    )
+    if (looks_unreliable(intents, raw)
+            and not is_confidently_resolvable_open_app(intents)
+            and llm_planner.available()):
+        logger.info("run_command: deterministic parse looks unreliable for this input, escalating")
+
+        # Plan the whole goal once, then execute deterministic local primitives.
+        # A valid structured plan owns this run: if one step fails, stop with
+        # concrete evidence rather than restarting the entire goal through
+        # multiple adaptive/LLM fallback layers.
+        from core.structured_automation import (
+            plan_and_execute_runtime as run_structured,
+        )
+        print("\nCreating one structured plan, then executing it locally...")
+        structured_result = run_structured(
+            raw,
+            approve_all=approve_all,
+            approval_callback=structured_plan_approver,
+        )
+        if structured_result is not None:
+            print(f"   {structured_result.message}")
+            if structured_result.evidence:
+                print(f"   Verified steps: {structured_result.completed_steps}")
+            return structured_result.success
+
+        # GUI-shaped goals (mentions a known app + real interaction, e.g.
+        # "compute 12x7 in calculator") go to the adaptive action_loop.py
+        # FIRST, ahead of the upfront-script planner. A one-shot bash script
+        # can only tell whether a delegated `agent.py "..."` call exited 0,
+        # not whether the click/type actually landed -- confirmed live to
+        # produce a false PASS on a calculator task (VERCEPT_LEVEL_ROADMAP.md).
+        # The adaptive loop re-observes after every action and independently
+        # verifies before accepting "done", so it gets first shot at exactly
+        # the goals where that distinction matters most. action_loop.py needs
+        # the same APINEX_API_KEY as llm_planner, so llm_planner.available()
+        # already tells us whether this branch is even worth trying.
+        gui_app_hint = looks_gui_shaped(raw)
+        adaptive_approved = is_approved("universal_fallback", fallback_params(raw))
+        if gui_app_hint and adaptive_approved:
+            from core.action_loop import action_loop
+            if action_loop.available():
+                print(f"\nParse looks unreliable and this looks like a GUI task in {gui_app_hint!r} -- trying the adaptive loop first...")
+                loop_result = action_loop.run_dynamic(
+                    raw,
+                    app_hint=gui_app_hint,
+                    approve_all=approve_all,
+                    approval_callback=structured_plan_approver,
+                )
+                if loop_result.success:
+                    print(f"   Adaptive loop succeeded: {loop_result.message}")
+                    return True
+                print(f"   Adaptive loop did not confirm success ({loop_result.message}) -- trying AI script planner...")
+
+        if not adaptive_approved:
+            print("Refusing adaptive and AI-script fallback without explicit approval for this exact command.")
+            return False
+
+        if not approve_all:
+            print("Skipping AI-generated shell plan: it requires explicit --yes authorization.")
+            return False
+
         print("\nParse looks unreliable for this instruction -- trying AI planner...")
-        ai_ok = llm_planner.plan_and_execute(raw)
+        ai_ok = llm_planner.plan_and_execute(raw, authorized=True)
         if ai_ok:
             print("   AI plan succeeded")
             return True
@@ -709,23 +898,41 @@ def run_command(raw: str) -> bool:
             # the adaptive closed loop (action_loop.py) left to try, which
             # can succeed at GUI-shaped goals a one-shot bash script can't.
             # Don't give up on the first attempt when smarter layers remain.
+            #
+            # IMPORTANT: this must call universal_fallback on the FULL raw
+            # instruction and return its result directly -- NOT fall through
+            # to the `intents` list below. That list is the same deterministic
+            # parse that was already judged unreliable enough to escalate to
+            # the AI planner in the first place (that's why we're here at
+            # all). Falling through to re-run it clause-by-clause used to
+            # silently execute garbled per-clause intents (e.g. a fragment
+            # like "tell me the result" coincidentally AT-SPI-clicking some
+            # unrelated on-screen element and reporting a false "Done") while
+            # the real Layer 5 adaptive loop was never actually invoked on
+            # the whole goal, despite the message below promising it would be.
             print("   AI plan failed -- trying universal fallback (adaptive loop, vision, etc.)")
+            fb_ok = run_fallback(raw)
+            print(f"   {'✅ Done' if fb_ok else '❌ Failed'} (universal fallback)")
+            return fb_ok
         else:
             print("   AI planner unavailable/failed -- falling back to deterministic parse")
 
     if not intents:
         logger.warning(f"SmartParser: no intent matched for {raw!r} — trying universal fallback")
-        print(f"\n\u26a0\ufe0f  No intent matched for: {raw!r}")
+        print(f"\n⚠️  No intent matched for: {raw!r}")
         print("   Trying universal fallback...")
-        from tasks.universal_fallback import execute as _fallback
-        ok = _fallback({"raw_command": raw, "normalized": raw}, {})
-        print(f"   {'\u2705 Done' if ok else '\u274c Failed'}")
+        ok = run_fallback(raw)
+        print(f"   {'✅ Done' if ok else '❌ Failed'}")
         return ok
 
     overall = True
     for intent in intents:
         print(f"\n🎯 Intent: {intent.intent}  (confidence={intent.confidence:.0%})")
         print(f"   Params: {intent.params}")
+        if requires_approval(intent.intent, intent.params) and not is_approved(intent.intent, intent.params):
+            print(f"   Refusing consequential action {intent.intent!r} without explicit approval (--yes or UI confirmation).")
+            overall = False
+            continue
         try:
             executor, args, resources = _build_executor(intent)
             ok = executor.run(args, resources)
@@ -733,8 +940,7 @@ def run_command(raw: str) -> bool:
             # Param extraction failed — still try universal fallback
             logger.warning(f"Param extraction failed ({exc}); trying universal fallback")
             print(f"   ⚠️  {exc} — trying universal fallback")
-            from tasks.universal_fallback import execute as _fallback
-            ok = _fallback({"raw_command": intent.raw_input, "normalized": intent.normalized_input}, {})
+            ok = run_fallback(intent.raw_input, intent.normalized_input)
 
         print(f"   {'✅ Done' if ok else '❌ Failed'}")
         overall = overall and ok
@@ -742,7 +948,12 @@ def run_command(raw: str) -> bool:
     return overall
 
 
-def _run_goal_dag(dag: "TaskDAG", session: "Session") -> dict:
+def _run_goal_dag(
+    dag: "TaskDAG",
+    session: "Session",
+    *,
+    approve_all: bool = False,
+) -> dict:
     """
     Run a TaskDAG via ParallelRunner while persisting progress to `session`
     so an interrupted run can be resumed later with `agent.py --resume <id>`
@@ -752,9 +963,14 @@ def _run_goal_dag(dag: "TaskDAG", session: "Session") -> dict:
     """
     import threading
 
+    from core.action_policy import requires_approval
     from core.parallel_runner import ParallelRunner
 
     def executor_builder(intent: str, task_args: dict):
+        if requires_approval(intent, task_args) and not approve_all:
+            raise PermissionError(
+                f"Goal step {intent!r} requires explicit approval; rerun with --yes"
+            )
         from core.smart_parser import ParsedIntent
         intent_obj = ParsedIntent(
             intent=intent,
@@ -804,13 +1020,16 @@ def _run_goal_dag(dag: "TaskDAG", session: "Session") -> dict:
         raise
     finally:
         stop_autosave.set()
+        autosave_thread.join(timeout=5.0)
+        if autosave_thread.is_alive():
+            logger.warning("Session autosave thread did not stop before final save")
 
     session.capture_dag(dag)
-    session.status = "done" if summary.get("failed", 0) == 0 else "failed"
+    session.status = "done" if not (summary.get("failed", 0) or summary.get("blocked", 0)) else "failed"
     session.log("finished", summary=summary)
     session.save()
     print(f"\nGoal complete: {summary}")
-    if summary.get("failed", 0):
+    if summary.get("failed", 0) or summary.get("blocked", 0):
         print(f"Some steps failed -- resume with: agent.py --resume {session.id}")
     return summary
 
@@ -832,6 +1051,14 @@ def main() -> None:
                         metavar="FILE", help="Path to workflow YAML file")
     parser.add_argument("--list", action="store_true",
                         help="List all available tasks")
+    parser.add_argument("--history", nargs="?", const=20, type=int, metavar="N",
+                        help="Show recent task activity; optionally choose how many entries")
+    parser.add_argument("-y", "--yes", action="store_true",
+                        help="Explicitly approve consequential actions for this invocation")
+    parser.add_argument("--list-apps", metavar="QUERY", nargs="?", const="",
+                        help="List installed Ubuntu applications the agent can open "
+                             "(system/user/snap/flatpak .desktop files); optionally "
+                             "filter by a search QUERY, e.g. --list-apps editor")
     # Phase 2: Goal Planner + Parallel Execution
     parser.add_argument("--goal", metavar="GOAL",
                         help="High-level goal — auto-planned and parallel-executed")
@@ -870,8 +1097,34 @@ def main() -> None:
             print(f"  \u2022 {t}")
         return
 
+    if args.history is not None:
+        from core.automation_service import automation_service
+
+        records = automation_service.recent(max(0, args.history))
+        if not records:
+            print("No recorded task activity yet.")
+            return
+        print(f"\nRecent task activity ({len(records)}):")
+        for record in records:
+            stamp = time.strftime("%Y-%m-%d %H:%M", time.localtime(record["started_at"]))
+            detail = f" — {record['error']}" if record.get("error") else ""
+            print(f"  {stamp}  {record['state']:10s}  {record['task']}{detail}")
+        return
+
+    if args.list_apps is not None:
+        from core.app_finder import list_app_names
+        query = args.list_apps.lower().strip()
+        names = list_app_names()
+        if query:
+            names = [n for n in names if query in n.lower()]
+        print(f"\n{len(names)} installed application(s){f' matching {query!r}' if query else ''}:")
+        for n in names:
+            print(f"  \u2022 {n}")
+        print("\nOpen any of these with: agent.py \"open <name>\"")
+        return
+
     if args.workflow:
-        engine = WorkflowEngine()
+        engine = WorkflowEngine(approve_all=args.yes)
         ok = engine.run(args.workflow, args.workflow_file)
         sys.exit(0 if ok else 1)
 
@@ -937,8 +1190,8 @@ def main() -> None:
             sys.exit(1)
         print(f"\nResuming session {session.id} -- {session.summary()}")
         dag = session.to_dag()
-        summary = _run_goal_dag(dag, session)
-        sys.exit(0 if summary['failed'] == 0 else 1)
+        summary = _run_goal_dag(dag, session, approve_all=args.yes)
+        sys.exit(0 if not (summary['failed'] or summary.get('blocked', 0)) else 1)
 
     # Blueprints: list, delete, test, or run a saved one
     if args.blueprints:
@@ -973,9 +1226,15 @@ def main() -> None:
             sys.exit(1)
         print(f"\nTesting blueprint {bp.name!r} -- {len(bp.steps)} step(s), each run independently:\n")
         all_ok = True
+        from core.action_policy import requires_approval
         for i, step in enumerate(bp.steps, 1):
+            step_args = step.get("args", {}) or {}
+            if requires_approval(step["intent"], step_args) and not args.yes:
+                print(f"  [{i}/{len(bp.steps)}] {step['intent']}: REFUSED (rerun with --yes)")
+                all_ok = False
+                continue
             intent_obj = ParsedIntent(
-                intent=step["intent"], params=step.get("args", {}) or {},
+                intent=step["intent"], params=step_args,
                 confidence=1.0, raw_input=str(step), normalized_input=str(step),
             )
             try:
@@ -1000,25 +1259,64 @@ def main() -> None:
         print(f"\nRunning blueprint {bp.name!r} -- {bp.summary()}")
         dag = bp.to_dag()
         session = Session.new(f"blueprint:{bp.name}")
-        summary = _run_goal_dag(dag, session)
-        sys.exit(0 if summary['failed'] == 0 else 1)
+        summary = _run_goal_dag(dag, session, approve_all=args.yes)
+        sys.exit(0 if not (summary['failed'] or summary.get('blocked', 0)) else 1)
 
     # Phase 2: Goal planner handler
     if args.goal:
         from core.goal_planner import goal_planner
+        from core.llm_planner import (
+            is_confidently_resolvable_open_app,
+            llm_planner,
+            looks_unreliable,
+        )
         from core.session import Session
+        from core.smart_parser import smart_parser
+
+        # Tier 5 escalation -- mirrors run_command()'s logic exactly, so
+        # --goal gets the same AI-planning power for unreliable/novel
+        # prose that the plain `agent.py "<command>"` path already has.
+        # Previously --goal ONLY ever used the deterministic SmartParser/
+        # TaskDAG path, with no escalation at all -- a real gap, since a
+        # goal is exactly where a user is most likely to type something
+        # the deterministic parser can't decompose.
+        intents = smart_parser.parse_multi(args.goal)
+        session = None
+        if (looks_unreliable(intents, args.goal)
+                and not is_confidently_resolvable_open_app(intents)
+                and llm_planner.available()):
+            if not args.yes:
+                print("AI-planned goals require explicit approval; rerun with --yes.")
+                sys.exit(1)
+            print("\nGoal parse looks unreliable -- using AI planner (Tier 5) for the whole goal...")
+            if args.save_blueprint:
+                print("   Note: --save-blueprint is skipped for AI-planned goals -- an "
+                      "improvised script has no reusable {intent, args} steps to save.")
+            session = Session.new(args.goal)
+            session.log("started", mode="ai_planner")
+            ai_ok = llm_planner.plan_and_execute(args.goal)
+            if ai_ok:
+                session.status = "done"
+                session.log("finished", ai_ok=ai_ok)
+                session.save()
+                print("\nGoal complete (AI planner): success")
+                sys.exit(0)
+            session.log("ai_planner_failed_falling_back", ai_ok=ai_ok)
+            print(f"\nAI planner {'failed' if ai_ok is False else 'unavailable'} -- falling back to deterministic goal planning...")
+
         dag = goal_planner.plan(args.goal)
         if args.save_blueprint:
             from core.blueprint import Blueprint
             bp = Blueprint.from_goal(args.save_blueprint, args.goal)
             bp.save()
             print(f"Saved blueprint {bp.name!r} ({len(bp.steps)} step(s)) -- rerun anytime with: agent.py --run-blueprint {bp.name}")
-        session = Session.new(args.goal)
-        summary = _run_goal_dag(dag, session)
-        sys.exit(0 if summary['failed'] == 0 else 1)
+        if session is None:
+            session = Session.new(args.goal)
+        summary = _run_goal_dag(dag, session, approve_all=args.yes)
+        sys.exit(0 if not (summary['failed'] or summary.get('blocked', 0)) else 1)
 
     if args.command:
-        ok = run_command(args.command)
+        ok = run_command(args.command, approve_all=args.yes)
         sys.exit(0 if ok else 1)
 
     parser.print_help()

@@ -58,7 +58,8 @@ def _profile_copy_stale() -> bool:
 def sync_profile(force: bool = False) -> bool:
     """
     Copy the real Chrome profile into the automation copy (cached).
-    Chrome must be closed during sync. Returns True if a sync happened.
+    Refuses to sync while normal Chrome is running rather than terminating it.
+    Returns True if a sync happened.
     """
     real = Path.home() / ".config" / "google-chrome"
     if not real.exists():
@@ -68,9 +69,12 @@ def sync_profile(force: bool = False) -> bool:
         logger.debug("Profile copy fresh — skipping sync (cached)")
         return False
 
-    # Chrome must not be running while we copy
-    _ = subprocess.run(["pkill", "-f", "chrome"], capture_output=True, check=False)
-    time.sleep(2)
+    # Copying a live profile is unsafe, but killing every Chrome process can
+    # destroy unsaved user work. Require the user to close Chrome explicitly.
+    running = subprocess.run(["pgrep", "-f", "google-chrome|chrome"], capture_output=True, check=False)
+    if running.returncode == 0:
+        logger.warning("Chrome is running; close it before syncing the automation profile")
+        return False
 
     AUTOMATION_DIR.mkdir(parents=True, exist_ok=True)
     cmd = ["rsync", "-a"]

@@ -14,6 +14,8 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 
+from loguru import logger
+
 
 def wait_until(
     check_fn: Callable[[], bool],
@@ -34,8 +36,8 @@ def wait_until(
         try:
             if check_fn():
                 return True
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug(f"wait_until: check raised (will retry): {exc}")
         time.sleep(interval)
     # One last check right at the deadline in case the last sleep overshot it
     try:

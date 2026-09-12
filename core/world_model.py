@@ -8,11 +8,13 @@ Used by:
   - ParallelRunner (dependency resolution)
 """
 from __future__ import annotations
+
 import subprocess
 import sys
+import threading
 import time
-import json
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List
+
 from loguru import logger
 
 # Ensure system pyatspi is in path
@@ -33,22 +35,28 @@ class WorldModel:
     
     def __init__(self) -> None:
         self._cache: Dict[str, Any] = {}
-        self._cache_time: float = 0
-        self._cache_ttl: float = 2.0  # Cache for 2 seconds
+        self._cache_times: Dict[str, float] = {}
+        self._cache_lock = threading.RLock()
+        self._cache_ttl: float = 2.0  # Cache each observation independently
     
     def snapshot(self) -> Dict[str, Any]:
         """Take a full snapshot of current desktop state."""
+        # Force one fresh observation generation so planners and repair logic
+        # do not combine values captured during unrelated earlier operations.
+        captured_at = time.time()
         return {
-            "open_apps": self.open_apps(),
-            "active_window": self.active_window_title(),
-            "running_procs": self.running_processes(),
-            "timestamp": time.time(),
+            "open_apps": self.open_apps(use_cache=False),
+            "active_window": self.active_window_title(use_cache=False),
+            "windows": self.get_window_list(use_cache=False),
+            "running_procs": self.running_processes(use_cache=False),
+            "timestamp": captured_at,
         }
     
     def open_apps(self, use_cache: bool = True) -> List[str]:
         """All apps visible in AT-SPI accessibility tree."""
         if use_cache and self._is_cache_valid("open_apps"):
-            return self._cache.get("open_apps", [])
+            with self._cache_lock:
+                return list(self._cache.get("open_apps", []))
         
         apps = []
         try:
@@ -60,14 +68,14 @@ class WorldModel:
         except Exception as exc:
             logger.debug(f"WorldModel.open_apps: {exc}")
         
-        self._cache["open_apps"] = apps
-        self._cache_time = time.time()
-        return apps
+        self._set_cache("open_apps", apps)
+        return list(apps)
     
     def active_window_title(self, use_cache: bool = True) -> str:
         """Title of the currently focused window."""
         if use_cache and self._is_cache_valid("active_window"):
-            return self._cache.get("active_window", "")
+            with self._cache_lock:
+                return str(self._cache.get("active_window", ""))
         
         title = ""
         try:
@@ -82,15 +90,14 @@ class WorldModel:
                         if frame and frame.getState().contains(pyatspi.STATE_ACTIVE):
                             title = frame.name or ""
                             break
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug(f"WorldModel: frame enum failed for {getattr(app, 'name', '?')}: {exc}")
                 if title:
                     break
         except Exception as exc:
             logger.debug(f"WorldModel.active_window: {exc}")
         
-        self._cache["active_window"] = title
-        self._cache_time = time.time()
+        self._set_cache("active_window", title)
         return title
     
     def is_app_running(self, name: str, use_cache: bool = True) -> bool:
@@ -102,7 +109,8 @@ class WorldModel:
     def running_processes(self, use_cache: bool = True) -> List[str]:
         """All running processes for current user."""
         if use_cache and self._is_cache_valid("running_processes"):
-            return self._cache.get("running_processes", [])
+            with self._cache_lock:
+                return list(self._cache.get("running_processes", []))
         
         procs = []
         try:
@@ -118,12 +126,15 @@ class WorldModel:
         except Exception as exc:
             logger.debug(f"WorldModel.running_processes: {exc}")
         
-        self._cache["running_processes"] = procs
-        self._cache_time = time.time()
-        return procs
+        self._set_cache("running_processes", procs)
+        return list(procs)
     
-    def get_window_list(self) -> List[Dict[str, str]]:
-        """Get detailed window list with app, title, state."""
+    def get_window_list(self, use_cache: bool = True) -> List[Dict[str, Any]]:
+        """Get detailed window list with app, title, focus, and visibility."""
+        if use_cache and self._is_cache_valid("windows"):
+            with self._cache_lock:
+                return [dict(item) for item in self._cache.get("windows", [])]
+
         windows = []
         try:
             import pyatspi
@@ -143,13 +154,14 @@ class WorldModel:
                                 "focused": state.contains(pyatspi.STATE_FOCUSED),
                                 "visible": state.contains(pyatspi.STATE_VISIBLE),
                             })
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug(f"WorldModel: window state read failed: {exc}")
         except Exception as exc:
             logger.debug(f"WorldModel.get_window_list: {exc}")
-        return windows
+        self._set_cache("windows", windows)
+        return [dict(item) for item in windows]
     
-    def find_app_by_name(self, name_fragment: str) -> Optional[str]:
+    def find_app_by_name(self, name_fragment: str) -> str | None:
         """Find running app matching name fragment (case-insensitive)."""
         apps = self.open_apps()
         name_lower = name_fragment.lower()
@@ -188,14 +200,29 @@ class WorldModel:
         
         return True
     
+    def _set_cache(self, key: str, value: Any) -> None:
+        with self._cache_lock:
+            self._cache[key] = value
+            self._cache_times[key] = time.monotonic()
+
     def _is_cache_valid(self, key: str) -> bool:
-        return (key in self._cache and 
-                time.time() - self._cache_time < self._cache_ttl)
-    
-    def invalidate_cache(self) -> None:
-        """Force cache refresh on next call."""
-        self._cache.clear()
-        self._cache_time = 0
+        with self._cache_lock:
+            captured_at = self._cache_times.get(key)
+            return (
+                key in self._cache
+                and captured_at is not None
+                and time.monotonic() - captured_at < self._cache_ttl
+            )
+
+    def invalidate_cache(self, key: str | None = None) -> None:
+        """Force one observation or the entire world state to refresh."""
+        with self._cache_lock:
+            if key is None:
+                self._cache.clear()
+                self._cache_times.clear()
+                return
+            self._cache.pop(key, None)
+            self._cache_times.pop(key, None)
 
 
 # Singleton instance

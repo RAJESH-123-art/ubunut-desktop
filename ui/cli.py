@@ -13,8 +13,18 @@ from pathlib import Path
 # Add project root to Python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from core.action_policy import describe_action, requires_approval
 from core.system_utils import env_check
 from tasks import get_task, list_tasks, task_info
+
+
+def _confirm_action(name: str, args: dict) -> bool:
+    """Require an exact interactive confirmation for consequential tasks."""
+    if not requires_approval(name, args):
+        return True
+    print(f"Approval required: {describe_action(name, args)}")
+    print(f"Exact task: {name}  args: {json.dumps(args, sort_keys=True, default=str)}")
+    return input("Execute this exact action? Type 'yes': ").strip().lower() == "yes"
 
 
 def console_menu():
@@ -39,6 +49,15 @@ def console_menu():
                 name = input("Task name: ").strip()
                 args_input = input("Args (JSON or empty): ").strip()
                 args = json.loads(args_input) if args_input else {}
+                if not isinstance(args, dict):
+                    raise ValueError("Task args must be a JSON object")
+                if not _confirm_action(name, args):
+                    print("Cancelled.")
+                    continue
+                if name == "run_command":
+                    args["authorized"] = True
+                elif name == "system_power":
+                    args["confirm"] = True
                 print(f"Running {name}...")
                 mod = get_task(name)
                 if not mod:
@@ -53,9 +72,12 @@ def console_menu():
             elif choice == "3":
                 wf_name = input("Workflow name: ").strip()
                 wf_file = input("Workflow file (defaults config/workflow.yaml) or empty: ").strip() or "config/workflow.yaml"
+                approve_all = input(
+                    "Allow consequential steps defined by this workflow? Type 'yes' to allow, or press Enter to refuse them: "
+                ).strip().lower() == "yes"
                 print(f"Running workflow {wf_name} from {wf_file}...")
                 from core.workflow_engine import WorkflowEngine
-                result = WorkflowEngine().run(wf_name, wf_file)
+                result = WorkflowEngine(approve_all=approve_all).run(wf_name, wf_file)
                 print("Workflow finished" if result else "Workflow failed")
             elif choice == "4":
                 print("\nEnvironment / capabilities:")

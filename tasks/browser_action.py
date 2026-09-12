@@ -38,6 +38,11 @@ _REQUIRED: dict[str, list[str]] = {
     "screenshot":        [],
     "scroll":            [],
     "scroll_into_view":  ["selector"],
+    "upload":            ["selector", "path"],
+    "download":          ["selector", "path"],
+    "set_cookie":        ["cookie"],
+    "handle_dialog":     ["selector"],
+    "wait_for_load":     [],
 }
 _VALID_TYPES = set(_REQUIRED.keys())
 
@@ -147,6 +152,38 @@ def execute(args: dict, resources: dict) -> bool:
                     logger.info(f"[{i+1}] scroll_into_view → {sel}")
                     browser.scroll_into_view(sel)
                     logger.info("  ✅ scrolled into view")
+
+
+                elif typ == "upload":
+                    sel, path = act["selector"], act["path"]
+                    browser.upload_file(sel, path)
+                    logger.info(f"  ✅ uploaded file: {path}")
+
+                elif typ == "download":
+                    sel, path = act["selector"], act["path"]
+                    browser.download_file(sel, path)
+                    logger.info(f"  ✅ downloaded file: {path}")
+
+                elif typ == "set_cookie":
+                    cookie = act["cookie"]
+                    browser.set_cookie(cookie)
+                    names = {item["name"] for item in browser.get_cookies()}
+                    if cookie["name"] not in names:
+                        raise RuntimeError(f"Cookie {cookie['name']!r} was not stored")
+                    logger.info(f"  ✅ cookie stored: {cookie['name']}")
+
+                elif typ == "handle_dialog":
+                    observed = browser.handle_dialog(
+                        act["selector"],
+                        accept=bool(act.get("accept", True)),
+                        prompt_text=act.get("prompt_text"),
+                    )
+                    logger.info(f"  ✅ handled {observed.get('type')} dialog: {observed.get('message')}")
+
+                elif typ == "wait_for_load":
+                    state = act.get("state", "load")
+                    browser.wait_for_load_state(state=state)
+                    logger.info(f"  ✅ page reached load state: {state}")
 
                 succeeded += 1
 

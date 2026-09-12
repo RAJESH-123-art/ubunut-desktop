@@ -26,7 +26,6 @@ from dataclasses import dataclass, field
 
 from loguru import logger
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # WORD MAP
 # Maps individual tokens → canonical English equivalents.
@@ -122,9 +121,11 @@ INTENT_DEFS: dict[str, dict] = {
         "extract": {"query": "all_after:youtube|play|search|watch|song|music|on|find"},
     },
     "install_app": {
-        "keywords": {"install", "setup", "get", "download", "add"},
-        "min_score": 0.10,   # fewer keywords → higher per-match score
-        "extract": {"app_name": "all_after:install|setup|get|download|add"},
+        # "download" alone is not installation: it may refer to an ISO, PDF,
+        # image, or browser download. Require an explicit install/setup verb.
+        "keywords": {"install", "setup"},
+        "min_score": 0.30,
+        "extract": {"app_name": "all_after:install|setup"},
     },
     "whatsapp_send": {
         "keywords": {"whatsapp", "send", "message", "msg", "chat", "bhejo", "bhej", "darling"},
@@ -193,6 +194,13 @@ INTENT_DEFS: dict[str, dict] = {
     "type_text": {
         "keywords": {"type", "write", "input", "keyboard"},
         "min_score": 0.20,
+        # NOTE: "text" is deliberately re-extracted from the RAW (unnormalized)
+        # input in parse() below, not via this rule -- _normalize() strips all
+        # punctuation, which silently mangled quoted literal text like
+        # "type '12*7=' into calculator" into "12 7 into calculator" (quotes,
+        # '*', '=' all stripped, and the app-targeting "into calculator" tail
+        # wrongly typed as literal text). This rule is kept only as the
+        # fallback used by scoring/param presence checks elsewhere.
         "extract": {"text": "all_after:type|write|input|keyboard"},
     },
     # ── Volume / Audio ────────────────────────────────────────────────────────
@@ -266,7 +274,7 @@ INTENT_DEFS: dict[str, dict] = {
         "keywords": {"system", "info", "collect", "specs", "hardware", "report"},
         "min_score": 0.15,
         "extract": {
-            "save_path": "regex:/tmp/\\S+\.txt|~/\\S+\.txt|/home/\\S+\.txt",
+            "save_path": r"regex:/tmp/\S+\.txt|~/\S+\.txt|/home/\S+\.txt",
         },
     },
     # ── Write / create a file ──────────────────────────────────────────
@@ -322,9 +330,15 @@ class ParsedIntent:
     confidence: float = 0.0
     raw_input: str = ""
     normalized_input: str = ""
+    # How much this intent's score beat the runner-up by (best - second_best).
+    # 1.0 = no real competitor at all (unambiguous). A small margin means two
+    # different intents scored nearly the same for this input -- a strong
+    # signal the deterministic parse made a close, potentially wrong, guess
+    # (see core.llm_planner.looks_unreliable, which escalates on this).
+    margin: float = 1.0
 
     def __str__(self) -> str:
-        return f"Intent({self.intent!r} conf={self.confidence:.2f} params={self.params})"
+        return f"Intent({self.intent!r} conf={self.confidence:.2f} margin={self.margin:.2f} params={self.params})"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -380,8 +394,21 @@ class SmartParser:
 
     # ── Param extraction ──────────────────────────────────────────────────────
 
-    def _extract(self, text: str, rule: str) -> str:
-        """Extract a param value from normalized text using a rule string."""
+    def _extract(self, text: str, rule: str, raw_text: str = "") -> str:
+        """
+        Extract a param value from normalized text using a rule string.
+
+        `raw_text`, when given, is used INSTEAD of `text` for "regex:" rules
+        only. _normalize() strips all punctuation (including '/', '.', ':',
+        '~') before this is ever called, which silently broke every regex
+        rule that depends on real path/URL syntax -- e.g. file_write's
+        file_path regex, or visit_url/open_browser's URL regex, could NEVER
+        match because "github.com" had already become "github com" and
+        "/tmp/x.txt" had already become "tmp x txt" by the time the regex
+        ran. Word-based rules (all_after/after/before/word_before) still use
+        the normalized `text` as before, since those are meant to operate on
+        cleaned tokens, not literal syntax.
+        """
         tokens = text.split()
 
         if rule.startswith("all_after:"):
@@ -418,10 +445,69 @@ class SmartParser:
 
         if rule.startswith("regex:"):
             pattern = rule[6:]
-            m = re.search(pattern, text, re.IGNORECASE)
+            m = re.search(pattern, raw_text or text, re.IGNORECASE)
             return m.group(0).strip() if m else ""
 
         return ""
+
+    _EXPLICIT_URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
+    _TYPE_TRIGGER_RE = re.compile(r"\b(?:type|write|input|keyboard)\b", re.IGNORECASE)
+    _TRAILING_APP_RE = re.compile(r"\s+(?:in|into)\s+([\w -]+?)\s*$", re.IGNORECASE)
+    _FILE_PATH_RE = re.compile(r"(?:/tmp/\S+|~/\S+|/home/\S+)")
+
+    def _extract_raw_file_write(self, raw: str, file_path: str) -> str:
+        """Extract literal file content without including the path clause."""
+        quoted = re.search(r"\b(?:content|text)\s+[\"'](.+?)[\"']", raw, re.IGNORECASE)
+        if quoted:
+            return quoted.group(1)
+
+        escaped_path = re.escape(file_path) if file_path else r"(?:/tmp/\S+|~/\S+|/home/\S+)"
+        patterns = (
+            # write hello world to /tmp/x.txt
+            rf"\bwrite\s+(.+?)\s+(?:to|into|in)\s+{escaped_path}(?:\s*$)",
+            # create file /tmp/x.txt with exact content hello world
+            rf"\b(?:create|write|save)\b.*?{escaped_path}\s+with\s+(?:exact\s+)?(?:content\s+)?(.+?)\s*$",
+            # save content hello world in /tmp/x.txt
+            rf"\b(?:save|write|create)\s+(?:exact\s+)?(?:content|text)\s+(.+?)\s+(?:to|into|in)\s+{escaped_path}(?:\s*$)",
+        )
+        for pattern in patterns:
+            match = re.search(pattern, raw, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+        return ""
+
+    def _extract_raw_type_text(self, raw: str) -> tuple[str, str]:
+        """
+        Extract (text_to_type, app_name) straight from the RAW input --
+        never the punctuation-stripped `normalized` text -- so literal
+        characters like quotes/'*'/'=' survive (e.g. "type '12*7=' into
+        calculator" must type exactly "12*7=", not "12 7 into calculator").
+
+        Quoted text (single or double quotes) is used verbatim when present,
+        since that's an unambiguous signal of exactly what to type. Otherwise
+        falls back to everything after the trigger word, with a trailing
+        "in/into <app>" clause peeled off into app_name instead of being
+        typed literally.
+        """
+        app_name = ""
+        quoted = re.search(r"[\"']([^\"']+)[\"']", raw)
+        if quoted:
+            text = quoted.group(1)
+            tail = raw[quoted.end():]
+            m = self._TRAILING_APP_RE.search(tail)
+            if m:
+                app_name = m.group(1).strip()
+            return text, app_name
+
+        m = self._TYPE_TRIGGER_RE.search(raw)
+        if not m:
+            return "", ""
+        rest = raw[m.end():].strip()
+        app_match = self._TRAILING_APP_RE.search(rest)
+        if app_match:
+            app_name = app_match.group(1).strip()
+            rest = rest[: app_match.start()].strip()
+        return rest, app_name
 
     # ── Main parse ────────────────────────────────────────────────────────────
 
@@ -432,11 +518,32 @@ class SmartParser:
         Returns None only if nothing matched above the minimum score.
         """
         normalized = self._normalize(raw)
+
+        # A literal URL is stronger evidence than every fuzzy keyword score.
+        # Preserve its punctuation and do not let path words such as
+        # "software-download/windows11" turn navigation into install_app.
+        explicit_url = self._EXPLICIT_URL_RE.search(raw)
+        if explicit_url:
+            url = explicit_url.group(0).rstrip(".,;:!?)]}")
+            result = ParsedIntent(
+                intent="visit_url",
+                params={"url": url},
+                confidence=1.0,
+                raw_input=raw,
+                normalized_input=normalized,
+                margin=1.0,
+            )
+            logger.info(f"SmartParser: explicit URL in {raw!r} → {result}")
+            return result
+
         tokens = normalized.split()
 
         best_intent: str | None = None
         best_score: float = 0.0
         best_params: dict[str, str] = {}
+        # Highest score among all OTHER intents that also cleared their own
+        # min_score -- used below to compute how close a call this was.
+        second_best_score: float = 0.0
 
         for intent_name, cfg in INTENT_DEFS.items():
             keywords: set[str] = cfg["keywords"]
@@ -452,19 +559,61 @@ class SmartParser:
                 total_score += kw_best
             score = total_score / len(keywords)
 
-            if score < min_score or score <= best_score:
+            if score < min_score:
                 continue
 
-            # Extract params
+            if score < best_score:
+                # Doesn't beat the current leader, but still a legitimate
+                # candidate (cleared its own min_score) -- track it as the
+                # runner-up if it's the closest one seen so far.
+                second_best_score = max(second_best_score, score)
+                continue
+
+            # Extract params up front -- an exact tie needs to compare them.
             params: dict[str, str] = {}
             for param_name, rule in cfg.get("extract", {}).items():
-                value = self._extract(normalized, rule)
+                value = self._extract(normalized, rule, raw_text=raw)
                 if value:
                     params[param_name] = value
+
+            if score == best_score and best_intent is not None:
+                # Exact tie with the current leader. Do NOT let Python dict
+                # insertion order silently decide the winner -- this
+                # previously made e.g. "write hello world to /tmp/x.txt"
+                # always resolve to type_text over the equally-scored, more
+                # specific file_write, purely because type_text happens to
+                # be declared earlier in INTENT_DEFS. Prefer whichever
+                # candidate's extraction rules actually pulled out more real
+                # information from this input -- a genuinely stronger signal
+                # than declaration order.
+                second_best_score = max(second_best_score, score)
+                if len(params) <= len(best_params):
+                    continue
+                # else: this tied candidate extracted more -- let it win below
+            else:
+                # New leader (score > previous best_score)
+                second_best_score = best_score
 
             best_score = score
             best_intent = intent_name
             best_params = params
+
+        # type_text's "text" must preserve exact punctuation/case from the
+        # RAW input -- the normalized text used for scoring/extraction above
+        # has already stripped quotes/'*'/'=' etc., which corrupts anything
+        # meant to be typed literally (numbers, symbols, code). See the
+        # comment on INTENT_DEFS["type_text"] and _extract_raw_type_text().
+        if best_intent == "type_text":
+            raw_text, raw_app = self._extract_raw_type_text(raw)
+            if raw_text:
+                best_params["text"] = raw_text
+            if raw_app:
+                best_params["app_name"] = raw_app
+        elif best_intent == "file_write":
+            file_path = best_params.get("file_path", "")
+            raw_content = self._extract_raw_file_write(raw, file_path)
+            if raw_content:
+                best_params["content"] = raw_content
 
         if best_intent is None:
             logger.warning(f"SmartParser: no intent matched for {raw!r}")
@@ -476,6 +625,7 @@ class SmartParser:
             confidence=best_score,
             raw_input=raw,
             normalized_input=normalized,
+            margin=best_score - second_best_score,
         )
         logger.info(f"SmartParser: {raw!r} → {result}")
         return result

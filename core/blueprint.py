@@ -22,10 +22,11 @@ import re
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 
+from core.atomic_write import atomic_write_json
 from core.smart_parser import smart_parser
 from core.task_dag import TaskDAG
 
@@ -77,7 +78,7 @@ class Blueprint:
         self._validate_name(self.name)
         _BLUEPRINTS_DIR.mkdir(parents=True, exist_ok=True)
         self.updated_at = time.time()
-        self._path().write_text(json.dumps(asdict(self), indent=2, default=str))
+        atomic_write_json(self._path(), asdict(self))
 
     def delete(self) -> None:
         try:
@@ -86,7 +87,7 @@ class Blueprint:
             logger.error(f"Blueprint.delete({self.name!r}) failed: {exc}")
 
     @staticmethod
-    def load(name: str) -> Optional[Blueprint]:
+    def load(name: str) -> Blueprint | None:
         path = _BLUEPRINTS_DIR / f"{name}.json"
         if not path.is_file():
             return None

@@ -7,17 +7,33 @@ Strategy (attempted in order, returns True on first success):
   1. URL check       — if raw_command looks like a URL, open with xdg-open
   2. CLI Registry    — check config/cli_registry.yaml for a matching known
                        task pattern (Layer 1, see ARCHITECTURE_EVOLUTION.md)
-  2.5 AT-SPI Navigator — Layer 2: if raw_command names an already-running
+  3. Adaptive loop   — Layer 2 (PROMOTED, see note below): general-purpose
+                       observe/decide/act/verify loop (core/action_loop.py),
+                       multi-step, no dedicated task file needed, no
+                       coordinate guessing. Needs APINEX_API_KEY.
+  4. AT-SPI Navigator — Layer 3: if raw_command names an already-running
                        app + an action ("in nautilus create new folder"),
                        read that app's live AT-SPI tree and click the best
-                       match (see core/atspi_navigator.py)
-  4. Adaptive loop   — Layer 5: general-purpose observe/decide/act loop
-                       (core/action_loop.py), multi-step, no dedicated task
-                       file needed. Needs NVIDIA_TEXT_API_KEY.
-  5. Known binary    — if the first token of normalized is on PATH, run it
-  6. Token scan      — scan all tokens; run the first one found on PATH
-  7. Record & fail   — append to ~/.config/desktop_automation/unknown_commands.txt
+                       match — single click only (see core/atspi_navigator.py)
+  5. Electron Navigator — Layer 4: same idea as #4, for Electron apps via CDP
+  6. Semantic Vision — Layer 5: cloud vision model, single click, last resort
+                       before blind guessing
+  7. Known binary    — if the first token of normalized is on PATH, run it
+  8. Token scan      — scan all tokens; run the first one found on PATH
+  9. Record & fail   — append to ~/.config/desktop_automation/unknown_commands.txt
                        and print a user-friendly tip, then return False
+
+Why the adaptive loop (#3) is tried BEFORE the single-shot layers (#4-#6):
+Layers 4-6 can only ever perform ONE click or ONE type action before giving
+up -- they cannot handle anything that genuinely needs multiple steps. The
+adaptive loop is a strict superset of what they can do (it can finish in a
+single step too, just via one LLM decision call instead of a keyword-scored
+guess), so trying it first means any fallback-routed command gets a real,
+human-like "look at the screen, decide, act, look again" attempt by
+default -- not only as a last resort after weaker layers already failed.
+When APINEX_API_KEY isn't configured, the adaptive loop is silently
+skipped and layers 4-6 run exactly as before -- no behavior change for
+users without that key configured.
 
 Args:
     raw_command (str): Original user input.
@@ -33,7 +49,6 @@ from pathlib import Path
 from loguru import logger
 
 from core.logger import finish, notify, start
-from core.safety_guard import is_dangerous_shell_command
 
 _URL_RE    = re.compile(r"https?://|[\w-]+\.[a-z]{2,}", re.IGNORECASE)
 _LOG_FILE  = Path.home() / ".config" / "desktop_automation" / "unknown_commands.txt"
@@ -136,7 +151,49 @@ def execute(args: dict, resources: dict) -> bool:
         except ImportError as exc:
             logger.debug(f"cli_registry unavailable: {exc}")
 
-        # ── 2.5 AT-SPI Navigator ─ Layer 2: any already-running GTK/Qt app ────
+        # ── 3. Adaptive closed loop ─ Layer 2 (PROMOTED): observe/decide/act ──
+        # See the module docstring above for why this runs here, ahead of
+        # the single-shot layers (4-6) below, instead of after them.
+        try:
+            from core.action_loop import action_loop
+            if action_loop.available():
+                app_hint = ""
+                app_action = _extract_app_action(raw_command)
+                if app_action:
+                    app_hint = app_action[0]
+                logger.info(f"Adaptive loop (Layer 2): trying goal={normalized!r} app_hint={app_hint!r}")
+                run_kwargs = {
+                    "app_hint": app_hint,
+                    "approve_all": bool(resources.get("approve_all", False)),
+                    "approval_callback": resources.get("approval_callback"),
+                }
+                loop_result = action_loop.run_dynamic(normalized, **run_kwargs)
+                if loop_result.success:
+                    logger.info(f"✅ Handled by adaptive loop (Layer 2): {loop_result.message}")
+                    notify(f"{normalized[:60]} (adaptive loop)")
+                    finish("success", task_name)
+                    return True
+                logger.debug(f"Adaptive loop: did not complete -- {loop_result.message}")
+            else:
+                logger.debug("Adaptive loop unavailable: APINEX_API_KEY not set")
+        except ImportError as exc:
+            logger.debug(f"action_loop unavailable: {exc}")
+        except Exception as exc:
+            logger.debug(f"Adaptive loop error: {exc}")
+
+        # Legacy direct mutation layers do not provide typed evidence, exact
+        # per-step approval, or uncertainty boundaries. Keep them available
+        # only under explicit --yes while migration to StructuredExecutor finishes.
+        if not bool(resources.get("approve_all", False)):
+            logger.warning(
+                "Universal fallback stopped after unified adaptive execution; "
+                "legacy direct UI layers require explicit --yes"
+            )
+            _record_unknown(raw_command)
+            finish("error", task_name)
+            return False
+
+        # ── 4. AT-SPI Navigator ─ Layer 3: any already-running GTK/Qt app ────
         # Only fires when an app name + action phrase are BOTH confidently
         # extracted AND that app is actually running right now — never
         # guesses wildly. See core/atspi_navigator.py and
@@ -158,14 +215,18 @@ def execute(args: dict, resources: dict) -> bool:
         except ImportError as exc:
             logger.debug(f"atspi_navigator unavailable: {exc}")
 
-        # ── 2.75 Electron Navigator ─ Layer 3: VS Code, Slack, Discord, etc. ──────
+        # ── 5. Electron Navigator ─ Layer 4: VS Code, Slack, Discord, etc. ──────
         # Only fires for KNOWN Electron apps when app name + action are confidently
         # extracted. Launches isolated instance with CDP if not already running.
         # Bypasses window-focus requirement that blocks Layer 2 (see TASK_KNOWLEDGE_BASE Part 14).
         # Uses dedicated ports per app to avoid conflicts; isolated user_data_dir
         # prevents disrupting the user's main session.
         try:
-            from core.electron_navigator import ensure_electron_cdp, click_by_intent, type_by_intent
+            from core.electron_navigator import (
+                click_by_intent,
+                ensure_electron_cdp,
+                type_by_intent,
+            )
             
             # Known Electron apps with dedicated CDP ports (non-overlapping)
             ELECTRON_APPS = {
@@ -281,17 +342,17 @@ def execute(args: dict, resources: dict) -> bool:
         except Exception as exc:
             logger.debug(f"Electron navigator error: {exc}")
 
-        # -- 2.9 Semantic Vision -- Layer 4: last-resort cloud vision model --
+        # -- 6. Semantic Vision -- Layer 5: cloud vision model, single click --
         # Only used when nothing else matched. Needs NVIDIA_API_KEY set; silently
         # skipped otherwise (see core/semantic_vision.py). Uses the (normalized)
         # command text itself as the description of what to find and click.
         try:
             from core.semantic_vision import semantic_vision
             if semantic_vision.api_key:
-                logger.info(f"Semantic vision (Layer 4): trying description={normalized!r}")
+                logger.info(f"Semantic vision (Layer 5): trying description={normalized!r}")
                 vision_result = semantic_vision.find_and_click(normalized)
                 if vision_result.success:
-                    logger.info(f"Handled by semantic vision (Layer 4) via {vision_result.method}")
+                    logger.info(f"Handled by semantic vision (Layer 5) via {vision_result.method}")
                     notify(f"{normalized[:60]} (vision)")
                     finish("success", task_name)
                     return True
@@ -303,39 +364,7 @@ def execute(args: dict, resources: dict) -> bool:
         except Exception as exc:
             logger.debug(f"Semantic vision error: {exc}")
 
-        # -- 4.5 Adaptive closed loop -- Layer 5: observe/decide/act, multi-step --
-        # This is the genuinely general-purpose layer: no dedicated tasks/*.py
-        # file, no pre-written pattern, and not limited to one click like
-        # semantic_vision above -- it repeatedly observes the real screen
-        # state (AT-SPI first, vision fallback), asks the model for exactly
-        # ONE next action, executes it, and repeats until done or it
-        # legitimately can't proceed. Needs NVIDIA_TEXT_API_KEY; silently
-        # skipped otherwise. Its own "done" claims are independently
-        # re-verified before being trusted (see core/action_loop.py).
-        try:
-            from core.action_loop import action_loop
-            if action_loop.available():
-                app_hint = ""
-                app_action = _extract_app_action(raw_command)
-                if app_action:
-                    app_hint = app_action[0]
-                logger.info(f"Adaptive loop (Layer 5): trying goal={normalized!r} app_hint={app_hint!r}")
-                loop_result = action_loop.run(normalized, app_hint=app_hint)
-                if loop_result.success:
-                    logger.info(f"✅ Handled by adaptive loop (Layer 5): {loop_result.message}")
-                    notify(f"{normalized[:60]} (adaptive loop)")
-                    finish("success", task_name)
-                    return True
-                logger.debug(f"Adaptive loop: did not complete -- {loop_result.message}")
-            else:
-                logger.debug("Adaptive loop unavailable: NVIDIA_TEXT_API_KEY not set")
-        except ImportError as exc:
-            logger.debug(f"action_loop unavailable: {exc}")
-        except Exception as exc:
-            logger.debug(f"Adaptive loop error: {exc}")
-
-        # -- 3. Known binary
-        # ── 3. Known binary ─ first token of normalized ───────────────────────
+        # ── 7. Raw shell fallback removed ─────────────────────────────────────
         # SAFETY: this path runs raw, un-vetted text via shell=True purely
         # because its first word happens to resolve to a real binary on
         # PATH — which is true for rm/mv/dd/kill/sudo etc. by default on
@@ -344,29 +373,12 @@ def execute(args: dict, resources: dict) -> bool:
         # is_dangerous_shell_command() guard below blocks known-catastrophic
         # patterns before anything runs (see TASK_KNOWLEDGE_BASE.md / the
         # "perfection" pass this was added in).
+        # Natural-language fallback must never become shell code merely because
+        # its first token exists on PATH. Explicit shell execution has its own
+        # consequential run_command intent and approval boundary.
         tokens = normalized.split()
-        if tokens:
-            first = tokens[0]
-            if shutil.which(first) and is_dangerous_shell_command(normalized):
-                logger.error(f"⛔ Refusing dangerous command from fallback path: {normalized!r}")
-                notify(f"Blocked dangerous command: {normalized[:60]}", critical=True)
-            elif shutil.which(first):
-                logger.info(f"First token '{first}' is a known binary — running command")
-                try:
-                    result = subprocess.run(
-                        normalized, shell=True, timeout=30,
-                        capture_output=True, text=True,
-                    )
-                    if result.returncode == 0:
-                        logger.info(f"✅ Command succeeded: {normalized!r}")
-                        notify(f"Ran: {normalized[:60]}{'…' if len(normalized) > 60 else ''}")
-                        finish("success", task_name)
-                        return True
-                    logger.debug(f"Command exited {result.returncode}: {normalized!r}")
-                except subprocess.TimeoutExpired:
-                    logger.debug(f"Command timed out: {normalized!r}")
 
-        # ── 4. Token scan ─ find any runnable binary among all tokens ─────
+        # ── 8. Token scan ─ find any runnable binary among all tokens ─────
         # SAFETY: this only ever launches a single bare token with no
         # arguments (subprocess.Popen([tok])) — it can't express "rm -rf /"
         # by construction, so no additional guard is needed here.
@@ -386,7 +398,7 @@ def execute(args: dict, resources: dict) -> bool:
                 except OSError as exc:
                     logger.debug(f"Popen({tok!r}) failed: {exc}")
 
-        # ── 5. Record & fail ──────────────────────────────────────────────────
+        # ── 9. Record & fail ──────────────────────────────────────────────────
         _record_unknown(raw_command)
 
         print(

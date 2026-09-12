@@ -36,9 +36,12 @@ Usage:
 """
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +49,7 @@ import yaml
 from loguru import logger
 
 from core.memory import memory
+from core.task_contract import TaskResult
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -58,6 +62,9 @@ class StepResult:
         self.skipped:   bool  = False
         self.duration:  float = 0.0
         self.error:     str   = ""
+        self.evidence:  list[dict[str, Any]] = []
+        self.outcome:   TaskResult | None = None
+        self.aliases:   tuple[str, ...] = (step_name,)
 
     def __repr__(self) -> str:
         status = "SKIP" if self.skipped else ("OK" if self.success else "FAIL")
@@ -73,8 +80,10 @@ class WorkflowEngine:
     Learns from past runs: which steps tend to fail → escalate retries next time.
     """
 
-    def __init__(self, max_workers: int = 4) -> None:
+    def __init__(self, max_workers: int = 4, *, approve_all: bool = False) -> None:
         self._max_workers = max_workers
+        self._approve_all = approve_all
+        self._run_stack: list[str] = []
 
     # ── YAML loading ──────────────────────────────────────────────────────────
 
@@ -129,6 +138,84 @@ class WorkflowEngine:
 
     # ── Single step execution ─────────────────────────────────────────────────
 
+    @staticmethod
+    def _step_aliases(step_cfg: dict[str, Any], fallback: str) -> tuple[str, ...]:
+        """Return stable user-visible identifiers for dependency references."""
+        aliases: list[str] = []
+        for value in (step_cfg.get("key"), step_cfg.get("name"), step_cfg.get("task"), fallback):
+            text = str(value or "").strip()
+            if text and text not in aliases:
+                aliases.append(text)
+        return tuple(aliases)
+
+    @staticmethod
+    def _dependencies(step_cfg: dict[str, Any]) -> list[str]:
+        declared = step_cfg.get("depends_on", [])
+        if declared is None:
+            return []
+        if isinstance(declared, str):
+            return [declared]
+        if isinstance(declared, (list, tuple)):
+            return [str(item) for item in declared]
+        return [str(declared)]
+
+    @staticmethod
+    def _find_prior_result(
+        reference: str,
+        previous_results: dict[str, StepResult],
+    ) -> StepResult | None:
+        """Resolve an exact result key or the latest matching prior step alias."""
+        if reference in previous_results:
+            return previous_results[reference]
+        for result_key, result in reversed(list(previous_results.items())):
+            if reference == result_key.rsplit("#", 1)[0] or reference in result.aliases:
+                return result
+        return None
+
+    def _dependency_error(
+        self,
+        step_cfg: dict[str, Any],
+        previous_results: dict[str, StepResult],
+    ) -> str:
+        for dependency in self._dependencies(step_cfg):
+            prior = self._find_prior_result(dependency, previous_results)
+            if prior is None:
+                return f"Missing dependency {dependency!r}"
+            if not prior.success and not prior.skipped:
+                detail = f": {prior.error}" if prior.error else ""
+                return f"Dependency {dependency!r} failed{detail}"
+        return ""
+
+    @staticmethod
+    def _run_condition(step_cfg: dict[str, Any]) -> tuple[str, str]:
+        """Read legacy scalar and optional mapping forms without changing either API."""
+        configured = step_cfg.get("run_if", "always")
+        reference = ""
+        if isinstance(configured, dict):
+            condition = configured.get("condition", configured.get("status", "always"))
+            reference = str(
+                configured.get("depends_on", configured.get("step", configured.get("key", "")))
+                or ""
+            )
+        else:
+            condition = configured
+        explicit = step_cfg.get(
+            "run_if_on",
+            step_cfg.get("condition_dependency", step_cfg.get("condition_step", "")),
+        )
+        if explicit:
+            reference = str(explicit)
+        return str(condition).lower(), reference
+
+    @staticmethod
+    def _must_not_retry(outcome: TaskResult) -> bool:
+        if outcome.state == "uncertain":
+            return True
+        return (
+            outcome.dispatch_status in ("dispatched", "unknown")
+            and outcome.side_effect in ("external", "destructive")
+        )
+
     def _run_step(
         self,
         step_cfg: dict[str, Any],
@@ -137,34 +224,60 @@ class WorkflowEngine:
         previous_results: dict[str, StepResult],
     ) -> StepResult:
         """Execute one workflow step with retries."""
-        from tasks import get_task
 
-        task_name  = step_cfg.get("task", "")
-        args       = step_cfg.get("args", {}) or {}
-        base_retry = int(step_cfg.get("retries", 0))
-        retry_wait = float(step_cfg.get("retry_wait", 2.0))
-        run_if     = step_cfg.get("run_if", "always").lower()
+        task_name = str(step_cfg.get("task", ""))
+        nested_workflow = str(step_cfg.get("workflow", "")).strip()
+        step_label = task_name or (f"workflow:{nested_workflow}" if nested_workflow else "step")
+        result = StepResult(step_label)
+        result.aliases = self._step_aliases(step_cfg, step_label)
 
-        result = StepResult(task_name)
-
-        # Conditional execution: check previous step outcome
-        if run_if != "always" and previous_results:
-            last = list(previous_results.values())[-1]
-            if run_if == "success" and not last.success:
-                logger.info(f"  Skipping '{task_name}' (run_if=success, prev failed)")
-                result.skipped = True
-                return result
-            if run_if == "failure" and last.success:
-                logger.info(f"  Skipping '{task_name}' (run_if=failure, prev succeeded)")
-                result.skipped = True
-                return result
-
-        mod = get_task(task_name)
-        if not mod:
-            logger.error(f"Task not found: {task_name}")
-            result.error = f"Task '{task_name}' not found"
+        dependency_error = self._dependency_error(step_cfg, previous_results)
+        if dependency_error:
+            result.error = dependency_error
+            logger.error(f"  Step '{step_label}' blocked: {dependency_error}")
             return result
 
+        run_if, condition_reference = self._run_condition(step_cfg)
+        if run_if != "always" and (previous_results or condition_reference):
+            condition_result = (
+                self._find_prior_result(condition_reference, previous_results)
+                if condition_reference
+                else list(previous_results.values())[-1]
+            )
+            if condition_result is None:
+                result.error = f"Missing condition dependency {condition_reference!r}"
+                logger.error(f"  Step '{step_label}' blocked: {result.error}")
+                return result
+            if run_if == "success" and not condition_result.success:
+                logger.info(f"  Skipping '{step_label}' (run_if=success, condition not successful)")
+                result.skipped = True
+                return result
+            if run_if == "failure" and (condition_result.success or condition_result.skipped):
+                logger.info(f"  Skipping '{step_label}' (run_if=failure, condition completed)")
+                result.skipped = True
+                return result
+
+        if nested_workflow:
+            nested_file = str(step_cfg.get("workflow_file", "")).strip()
+            if not nested_file:
+                result.error = "nested workflow requires workflow_file"
+                return result
+            t0 = time.time()
+            result.success = self.run(nested_workflow, nested_file, shared_resources)
+            result.duration = time.time() - t0
+            if not result.success:
+                result.error = f"Nested workflow {nested_workflow!r} failed"
+            return result
+
+        args = dict(step_cfg.get("args", {}) or {})
+        base_retry = int(step_cfg.get("retries", 0))
+        retry_wait = float(step_cfg.get("retry_wait", 2.0))
+
+        from core.action_policy import requires_approval
+        if requires_approval(task_name, args) and not self._approve_all:
+            result.error = f"Task {task_name!r} requires explicit approval"
+            logger.error(result.error)
+            return result
         retries = self._adaptive_retries(wf_name, task_name, base_retry)
         t0 = time.time()
 
@@ -175,12 +288,28 @@ class WorkflowEngine:
                 time.sleep(wait)
 
             try:
-                task_res = mod.setup()
-                all_res  = {**shared_resources, **task_res}
-                ok       = mod.execute(args, all_res)
-                mod.cleanup(all_res)
-                if ok:
-                    result.success = True
+                from core.automation_service import ExecutionRequest, automation_service
+
+                outcome = automation_service.execute(
+                    ExecutionRequest(
+                        task=task_name,
+                        params=args,
+                        approved=self._approve_all,
+                        source=f"workflow:{wf_name}",
+                        execution_id=f"workflow:{wf_name}:{task_name}:{attempt}",
+                    ),
+                    resources=shared_resources,
+                )
+                result.outcome = outcome
+                result.success = outcome.success
+                result.evidence = list(outcome.evidence)
+                if outcome.error:
+                    result.error = outcome.error
+                elif outcome.success:
+                    result.error = ""
+                else:
+                    result.error = f"Task outcome: {outcome.state}"
+                if result.success or self._must_not_retry(outcome):
                     break
             except Exception as exc:
                 logger.warning(f"  Step '{task_name}' attempt {attempt+1} raised: {exc}")
@@ -198,23 +327,34 @@ class WorkflowEngine:
         wf_name: str,
         shared_resources: dict[str, Any],
         previous_results: dict[str, StepResult],
+        start_ordinal: int = 0,
     ) -> dict[str, StepResult]:
+        # Keyed by "{task_name}#{ordinal}", NOT bare task_name -- a workflow
+        # that runs the same task more than once (e.g. visiting two URLs both
+        # via open_browser_and_visit) would otherwise silently collide in
+        # this dict, with the later result overwriting the earlier one and
+        # the run's final ok/fail summary undercounting real, successfully
+        # executed steps. Verified live: a 3-step workflow with a repeated
+        # task name reported ok=2 instead of ok=3 despite all 3 actions
+        # genuinely succeeding (confirmed independently via the browser's
+        # own tab list).
         results: dict[str, StepResult] = {}
         with ThreadPoolExecutor(max_workers=self._max_workers) as ex:
             futures = {
                 ex.submit(
                     self._run_step, step, wf_name, shared_resources, previous_results
-                ): step.get("task", f"step_{i}")
+                ): f"{step.get('task', f'step_{i}')}#{start_ordinal + i}"
                 for i, step in enumerate(steps)
             }
-            for fut in as_completed(futures):
-                task_name = futures[fut]
+            # Futures still execute concurrently, but results are inserted in
+            # declared order so later run_if evaluation cannot depend on timing.
+            for fut, result_key in futures.items():
                 try:
-                    results[task_name] = fut.result()
+                    results[result_key] = fut.result()
                 except Exception as exc:
-                    r = StepResult(task_name)
+                    r = StepResult(result_key)
                     r.error = str(exc)
-                    results[task_name] = r
+                    results[result_key] = r
         return results
 
     # ── Main run ──────────────────────────────────────────────────────────────
@@ -224,12 +364,40 @@ class WorkflowEngine:
         workflow_name: str,
         workflow_file: str = "config/workflow.yaml",
         shared_resources: dict[str, Any] | None = None,
+        *,
+        resume: bool = False,
+        state_file: str | None = None,
     ) -> bool:
-        """
-        Load and execute a named workflow.
+        """Run a workflow while always unwinding nested-workflow cycle state."""
+        if workflow_name in self._run_stack:
+            cycle = " -> ".join([*self._run_stack, workflow_name])
+            logger.error(f"Nested workflow cycle rejected: {cycle}")
+            return False
+        self._run_stack.append(workflow_name)
+        try:
+            return self._run(
+                workflow_name,
+                workflow_file,
+                shared_resources,
+                resume=resume,
+                state_file=state_file,
+            )
+        except Exception as exc:
+            logger.exception(f"Workflow {workflow_name!r} failed unexpectedly: {exc}")
+            return False
+        finally:
+            self._run_stack.pop()
 
-        Returns True if all non-skipped steps succeeded.
-        """
+    def _run(
+        self,
+        workflow_name: str,
+        workflow_file: str = "config/workflow.yaml",
+        shared_resources: dict[str, Any] | None = None,
+        *,
+        resume: bool = False,
+        state_file: str | None = None,
+    ) -> bool:
+        """Load and execute a named workflow after recursion state is registered."""
         from config.config_loader import load_config
         from core.gui_controller import GUIController
         from core.vision_engine import VisionEngine
@@ -253,6 +421,43 @@ class WorkflowEngine:
         timeout  = wf_cfg.get("timeout", None)
         # Accept both 'steps:' and 'tasks:' as the YAML key (both are common)
         steps    = wf_cfg.get("steps") or wf_cfg.get("tasks") or []
+
+        fingerprint = hashlib.sha256(
+            json.dumps(wf_cfg, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()
+        checkpoint_path = Path(state_file) if state_file else None
+        completed_indices: set[int] = set()
+        if resume and checkpoint_path and checkpoint_path.is_file():
+            try:
+                saved = json.loads(checkpoint_path.read_text())
+                if (
+                    saved.get("workflow") == workflow_name
+                    and saved.get("fingerprint") == fingerprint
+                ):
+                    completed_indices = {
+                        int(index) for index in saved.get("completed_indices", [])
+                    }
+                    logger.info(
+                        f"  Resuming from checkpoint: {len(completed_indices)} completed step(s)"
+                    )
+                else:
+                    logger.warning("Checkpoint does not match current workflow; starting fresh")
+            except (OSError, ValueError, TypeError) as exc:
+                logger.warning(f"Could not read checkpoint; starting fresh: {exc}")
+
+        def save_checkpoint(complete: bool = False) -> None:
+            if checkpoint_path is None:
+                return
+            checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            payload = {
+                "workflow": workflow_name,
+                "fingerprint": fingerprint,
+                "completed_indices": sorted(completed_indices),
+                "complete": complete,
+            }
+            temporary = checkpoint_path.with_suffix(checkpoint_path.suffix + ".tmp")
+            temporary.write_text(json.dumps(payload, sort_keys=True))
+            os.replace(temporary, checkpoint_path)
 
         logger.info(f"  Description : {wf_cfg.get('description', '')}")
         logger.info(f"  Steps       : {len(steps)}")
@@ -281,30 +486,71 @@ class WorkflowEngine:
             # Check workflow timeout
             if timeout and (time.time() - wf_start) > timeout:
                 logger.warning("Workflow timeout reached — stopping")
+                overall_ok = False
                 break
 
             step = steps[i]
 
+            if i in completed_indices:
+                task_label = step.get("task") or (
+                    f"workflow:{step['workflow']}" if step.get("workflow") else f"step_{i}"
+                )
+                resumed = StepResult(str(task_label))
+                resumed.success = True
+                resumed.skipped = True
+                resumed.aliases = self._step_aliases(step, str(task_label))
+                all_results[f"{task_label}#{i}"] = resumed
+                logger.info(f"  ↪ [{i+1}/{len(steps)}] {task_label} restored from checkpoint")
+                i += 1
+                continue
+
             if step.get("parallel", False):
                 # Collect all consecutive parallel steps
-                batch: list[dict] = []
+                batch: list[dict[str, Any]] = []
+                batch_aliases: set[str] = set()
                 while i < len(steps) and steps[i].get("parallel", False):
-                    batch.append(steps[i])
+                    candidate = steps[i]
+                    # A parallel step may depend on an earlier parallel step. End
+                    # this wave before it so that dependency has a real result.
+                    if batch and any(
+                        dependency in batch_aliases
+                        for dependency in self._dependencies(candidate)
+                    ):
+                        break
+                    batch.append(candidate)
+                    aliases = self._step_aliases(
+                        candidate,
+                        str(candidate.get("task") or f"step_{i}"),
+                    )
+                    batch_aliases.update(aliases)
+                    batch_aliases.update(f"{alias}#{i}" for alias in aliases)
                     i += 1
-                logger.info(f"  ⚡ Running {len(batch)} steps in parallel …")
+                logger.info(f"  \u26a1 Running {len(batch)} steps in parallel \u2026")
                 batch_results = self._run_parallel_batch(
-                    batch, workflow_name, shared_resources, all_results
+                    batch, workflow_name, shared_resources, all_results, start_ordinal=i - len(batch)
                 )
                 all_results.update(batch_results)
-                for r in batch_results.values():
-                    if not r.success and not r.skipped:
+                for result_key, r in batch_results.items():
+                    if r.success or r.skipped:
+                        try:
+                            completed_indices.add(int(result_key.rsplit("#", 1)[1]))
+                        except (IndexError, ValueError):
+                            logger.warning(f"Could not checkpoint parallel result {result_key!r}")
+                    elif not r.skipped:
                         overall_ok = False
+                save_checkpoint()
             else:
-                task_label = step.get("task", f"step_{i}")
-                logger.info(f"\n  → [{i+1}/{len(steps)}] {task_label}")
+                task_label = step.get("task") or (
+                    f"workflow:{step['workflow']}" if step.get("workflow") else f"step_{i}"
+                )
+                logger.info(f"\n  \u2192 [{i+1}/{len(steps)}] {task_label}")
                 r = self._run_step(step, workflow_name, shared_resources, all_results)
-                all_results[task_label] = r
+                step_index = i
+                all_results[f"{task_label}#{i}"] = r
                 i += 1
+                if r.success or r.skipped:
+                    completed_indices.add(step_index)
+                save_checkpoint()
 
                 status = "✅ OK" if r.success else ("⏭ skipped" if r.skipped else "❌ FAILED")
                 logger.info(f"     {status} ({r.duration:.1f}s)")
@@ -312,14 +558,17 @@ class WorkflowEngine:
                 if not r.success and not r.skipped:
                     overall_ok = False
                     if on_error == "abort":
-                        logger.error(f"on_error=abort — stopping workflow")
+                        logger.error("on_error=abort — stopping workflow")
                         break
                     if on_error == "notify":
                         try:
                             from core.logger import notify
                             notify(f"Workflow step failed: {task_label}", critical=True)
-                        except Exception:
-                            pass
+                        except Exception as exc:
+                            logger.debug(f"workflow notify failed: {exc}")
+
+        workflow_complete = len(completed_indices) == len(steps) and overall_ok
+        save_checkpoint(complete=workflow_complete)
 
         # Summary
         ok_count  = sum(1 for r in all_results.values() if r.success)
@@ -338,4 +587,4 @@ class WorkflowEngine:
             "duration": total_time, "overall": overall_ok,
         })
 
-        return overall_ok
+        return workflow_complete

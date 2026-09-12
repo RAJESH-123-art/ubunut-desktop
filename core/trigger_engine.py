@@ -12,15 +12,17 @@ Trigger types:
   - BatteryTrigger: fires when battery drops below threshold
 """
 from __future__ import annotations
+
+import glob
+import os
 import re
 import subprocess
 import time
-import glob
-import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Any
+from typing import Any, Dict, List, Set
+
 from loguru import logger
 
 
@@ -72,7 +74,7 @@ class TimeTrigger(Trigger):
         self._last_hhmm = ""
 
     def check(self) -> TriggerResult:
-        now = datetime.now()
+        now = datetime.now(tz=None).astimezone()
         hhmm = now.strftime("%H:%M")
         
         # Specific time match
@@ -207,8 +209,8 @@ class BatteryTrigger(Trigger):
                         )
                 except (FileNotFoundError, ValueError):
                     continue
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug(f"battery trigger check failed: {exc}")
         return TriggerResult(fired=False, context={})
 
 
@@ -222,7 +224,7 @@ TRIGGER_TYPES: Dict[str, type] = {
 }
 
 
-def create_trigger_from_dict(data: Dict[str, Any]) -> Optional[Trigger]:
+def create_trigger_from_dict(data: Dict[str, Any]) -> Trigger | None:
     """Factory function to create trigger from config dict."""
     kind = data.get("type", "")
     trigger_class = TRIGGER_TYPES.get(kind)

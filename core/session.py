@@ -18,17 +18,20 @@ elsewhere in this project.
 from __future__ import annotations
 
 import json
+import threading
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from loguru import logger
 
+from core.atomic_write import atomic_write_json
 from core.task_dag import TaskDAG, TaskNode
 
 _SESSIONS_DIR = Path.home() / ".config" / "desktop_automation" / "sessions"
+_SESSION_LOCK = threading.RLock()
 
 
 @dataclass
@@ -59,21 +62,22 @@ class Session:
         """
         Rebuild a TaskDAG from saved node state, ready to resume.
 
-        Nodes still "running" when the session was last saved are reset to
-        "pending" -- we crashed/stopped mid-execution and can't know if they
-        actually finished, so it's safer to redo them than silently skip a
-        possibly-incomplete step. "done" nodes are left alone, so the runner
-        skips them and only what's actually left gets re-run.
+        Nodes that were running, failed, blocked, recovering, or deferred are
+        reset to pending. A resumed session is an explicit request to retry
+        incomplete work; completed nodes remain done and are not repeated.
         """
         dag = TaskDAG()
         for nd in self.nodes:
+            args = nd.get("args", {}) or {}
+            if args.get("_recovery_for"):
+                continue
             status = nd.get("status", "pending")
-            if status == "running":
+            if status in ("running", "failed", "blocked", "recovering", "deferred", "skipped"):
                 status = "pending"
             node = TaskNode(
                 id=nd["id"],
                 intent=nd["intent"],
-                args=nd.get("args", {}) or {},
+                args=args,
                 deps=nd.get("deps", []) or [],
                 status=status,
                 result=nd.get("result"),
@@ -96,7 +100,8 @@ class Session:
     def save(self) -> None:
         try:
             _SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
-            self._path().write_text(json.dumps(asdict(self), indent=2, default=str))
+            with _SESSION_LOCK:
+                atomic_write_json(self._path(), asdict(self))
         except OSError as exc:
             logger.error(f"Session.save({self.id!r}) failed: {exc}")
 
@@ -107,7 +112,7 @@ class Session:
             logger.error(f"Session.delete({self.id!r}) failed: {exc}")
 
     @staticmethod
-    def load(session_id: str) -> Optional[Session]:
+    def load(session_id: str) -> Session | None:
         path = _SESSIONS_DIR / f"{session_id}.json"
         if not path.is_file():
             return None

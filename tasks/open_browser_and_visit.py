@@ -8,13 +8,21 @@ Decision flow (Klavaro pattern):
   4. Abort with clear message if all strategies fail
 
 Strategy (in order, fastest to slowest):
-  1. CDP warm Chrome   — reuses existing session, instant
+  0. Firefox direct launch — ONLY when browser="firefox" was explicitly
+     requested. Firefox does not speak Chrome's remote-debugging protocol,
+     so it is never routed through the Chrome-specific CDP strategy below
+     — a literal request for Firefox must not silently end up opening
+     Chrome just because Chrome also "counts" as a browser being open.
+  1. CDP warm Chrome   — reuses existing session, instant (chromium/chrome/brave hints only)
   2. Playwright        — Brave/Chromium/Firefox via BrowserController
   3. subprocess        — plain browser launch via find_browser()
 
 Args:
     url (str):              Target URL (default https://news.ycombinator.com)
-    browser (str):          Hint: "chromium" | "brave" | "firefox" (default "chromium")
+    browser (str):          Which browser to use: "firefox" | "chromium" | "chrome" | "brave"
+                            (default "chromium"). Honored strictly — a
+                            "firefox" request never falls through to Chrome
+                            unless launching Firefox itself fails.
     screenshot (bool):      Save a screenshot after loading (default False)
     delay_after_load (int): Seconds to wait after navigation (default 3)
     close_after (bool):     Close browser tab/window after task (default False)
@@ -62,20 +70,39 @@ def execute(args: dict, resources: dict) -> bool:
         delay        = max(1, int(args.get("delay_after_load", 3)))
         do_ss        = bool(args.get("screenshot", False))
         close_after  = bool(args.get("close_after", False))
-        browser_hint = str(args.get("browser", "chromium"))
+        browser_hint = str(args.get("browser", "chromium")).strip().lower()
 
-        logger.info(f"Opening: {url}")
+        logger.info(f"Opening: {url}  (browser={browser_hint!r})")
         opened = False
 
-        # ── Strategy 1: CDP (warm Chrome) ────────────────────────────────────
-        try:
-            from core.cdp_browser import open_url
-            open_url(url)
-            time.sleep(delay)
-            opened = True
-            logger.info(f"✅ Opened via CDP: {url}")
-        except Exception as exc:
-            logger.debug(f"CDP unavailable ({exc}); trying Playwright")
+        # ── Strategy 0: Firefox — launched directly, never via Chrome's CDP ──
+        # Firefox does not speak Chrome's remote-debugging protocol used by
+        # Strategy 1, so it must never be routed through it — otherwise a
+        # request naming Firefox specifically gets silently "satisfied" by
+        # Chrome opening instead, which downstream verification (any browser
+        # process running) would wrongly confirm as success.
+        if browser_hint == "firefox":
+            try:
+                subprocess.Popen(
+                    ["firefox", url],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                )
+                time.sleep(delay)
+                opened = True
+                logger.info(f"✅ Opened via Firefox: {url}")
+            except OSError as exc:
+                logger.warning(f"Firefox launch failed ({exc}); falling back to Playwright/subprocess")
+
+        # ── Strategy 1: CDP (warm Chrome) — Chrome-family hints only ─────────
+        if not opened and browser_hint in ("chromium", "chrome", "brave"):
+            try:
+                from core.cdp_browser import open_url
+                open_url(url)
+                time.sleep(delay)
+                opened = True
+                logger.info(f"✅ Opened via CDP: {url}")
+            except Exception as exc:
+                logger.debug(f"CDP unavailable ({exc}); trying Playwright")
 
         # ── Strategy 2: Playwright ────────────────────────────────────────────
         if not opened:
@@ -100,7 +127,7 @@ def execute(args: dict, resources: dict) -> bool:
         # ── Strategy 3: subprocess plain launch ───────────────────────────────
         if not opened:
             from core.app_registry import find_browser
-            cmd = find_browser() if browser_hint == "chromium" else browser_hint
+            cmd = find_browser() if browser_hint in ("chromium", "chrome") else browser_hint
             subprocess.Popen(
                 [cmd, url],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,

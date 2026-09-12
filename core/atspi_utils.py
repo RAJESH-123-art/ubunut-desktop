@@ -45,8 +45,8 @@ def find_node(root: object, role: object = None,
                               depth + 1, max_depth)
             if found:
                 return found
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug(f"AT-SPI node search aborted at depth {depth}: {exc}")
     return None
 
 
@@ -111,8 +111,8 @@ def wait_for_app(name_fragments: list[str], timeout: int = 15) -> object | None:
                 if any(frag in n for frag in name_fragments):
                     logger.info(f"AT-SPI: found app '{app.name}'")
                     return app
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug(f"AT-SPI app scan pass failed: {exc}")
         time.sleep(1)
 
     logger.warning(f"AT-SPI: app {name_fragments} not found after {timeout}s")

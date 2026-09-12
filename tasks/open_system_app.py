@@ -3,19 +3,27 @@ System app launcher with AT-SPI launch verification.
 
 Decision flow (Klavaro pattern):
   1. Sanity-check: non-empty app name
-  2. Resolve launch command (APP_COMMANDS registry → direct exec → .desktop fallback)
-  3. VERIFY the command exists on PATH before launching (abort if not found)
-  4. Launch via subprocess.Popen (non-blocking)
-  5. AT-SPI verify: poll accessibility tree until app appears (or timeout)
-  6. Report whether app was confirmed running
+  2. Resolve launch command:
+       a. APP_COMMANDS registry   — fast path for well-known apps
+       b. direct binary on PATH
+       c. core.app_finder         — full index of every installed .desktop
+                                     app (system, user, snap, flatpak) —
+                                     this is what makes ANY installed Ubuntu
+                                     application openable, not just the
+                                     curated registry
+       d. legacy filename glob fallback
+  3. Launch via subprocess.Popen (non-blocking)
+  4. AT-SPI verify: poll accessibility tree until app appears (or timeout)
+  5. Report whether app was confirmed running
 
 Args:
-    app_name (str): Application name — matched against APP_COMMANDS registry.
+    app_name (str): Application name — matched against APP_COMMANDS first,
+        then against every installed application's Name/GenericName/id.
 """
+import shlex
 import shutil
 import subprocess
 import sys
-import time
 from glob import glob
 from pathlib import Path
 
@@ -27,58 +35,51 @@ from core.app_registry import APP_COMMANDS
 from core.logger import finish, notify, start
 
 
-def _resolve_command(app_name: str) -> str | None:
+def _resolve_launch(app_name: str) -> tuple[str | None, str]:
     """
     Resolve app_name to a launchable command.
-    Priority: APP_COMMANDS registry → direct binary → .desktop file.
-    Returns None if nothing found.
+
+    Priority:
+      1. APP_COMMANDS registry — fast path for a handful of well-known apps
+      2. Direct binary on PATH
+      3. core.app_finder — full index of EVERY installed app (system, user,
+         snap, flatpak .desktop files), so any installed Ubuntu application
+         can be opened, not just the curated APP_COMMANDS list
+      4. Legacy glob fallback over /usr/share/applications by filename
+
+    Returns (command, verify_name) where verify_name is the best string to
+    search the AT-SPI tree for afterward. (None, "") if nothing found.
     """
     name_lower = app_name.lower().strip()
 
-    # Registry lookup
+    # 1. Registry lookup
     cmd = APP_COMMANDS.get(name_lower)
     if cmd and shutil.which(cmd.split()[0]):
-        return cmd
+        return cmd, cmd.split()[0]
 
-    # Direct binary
+    # 2. Direct binary
     if shutil.which(app_name):
-        return app_name
+        return app_name, app_name
     if shutil.which(name_lower):
-        return name_lower
+        return name_lower, name_lower
 
-    # .desktop file fallback
+    # 3. Full desktop-application index (covers everything installed)
+    from core.app_finder import find_app
+    found = find_app(app_name)
+    if found:
+        launch = found.launch_command()
+        if launch:
+            logger.info(f"app_finder: resolved '{app_name}' -> '{found.name}' ({launch})")
+            verify_name = found.wm_class or found.name.split()[0]
+            return launch, verify_name
+
+    # 4. Legacy glob fallback
     for df in glob(f"/usr/share/applications/*{name_lower}*.desktop"):
         stem = Path(df).stem
         if shutil.which("gtk-launch"):
-            return f"gtk-launch {stem}"
+            return f"gtk-launch {stem}", stem
 
-    return None
-
-
-def _atspi_verify_running(app_name: str, timeout: float = 10.0) -> bool:
-    """
-    Poll the AT-SPI desktop until an app whose name contains app_name appears.
-    Returns True if found within timeout.
-    """
-    try:
-        import pyatspi
-    except ImportError:
-        logger.debug("pyatspi not available — skipping AT-SPI verify")
-        return True   # can't verify, assume OK
-
-    name_lower = app_name.lower()
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        try:
-            desktop = pyatspi.Registry.getDesktop(0)
-            for a in desktop:
-                if a and name_lower in (a.name or "").lower():
-                    logger.info(f"AT-SPI: '{a.name}' confirmed running ✅")
-                    return True
-        except Exception as exc:
-            logger.debug(f"AT-SPI app lookup failed: {exc}")
-        time.sleep(0.5)
-    return False
+    return None, ""
 
 
 def setup() -> dict:
@@ -96,31 +97,37 @@ def execute(args: dict, resources: dict) -> bool:
             raise ValueError("'app_name' is required")
 
         # ── Resolve command ───────────────────────────────────────────────────
-        cmd = _resolve_command(app_name)
+        cmd, verify_name = _resolve_launch(app_name)
         if not cmd:
+            from core.app_finder import list_app_names
             raise RuntimeError(
                 f"Cannot find launch command for '{app_name}'. "
-                f"Available registered apps: {sorted(APP_COMMANDS.keys())}"
+                f"Not in curated registry ({sorted(APP_COMMANDS.keys())}) "
+                f"and no matching installed application found. "
+                f"Try 'agent.py --list-apps' to see all {len(list_app_names())} "
+                f"discovered installed applications."
             )
 
         logger.info(f"Launching '{app_name}' → command: {cmd}")
 
         # ── Launch ────────────────────────────────────────────────────────────
+        # shlex.split (not str.split) so Exec= commands with quoted arguments
+        # (common in .desktop files, e.g. `env FOO="bar baz" app`) still work.
         subprocess.Popen(
-            cmd.split(),
+            shlex.split(cmd),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
-        # NOTE: no blind sleep here — _atspi_verify_running() below polls
+        # NOTE: no blind sleep here — wait_until_running() below polls
         # immediately and repeatedly, so waiting first only wastes time on
         # fast-launching apps without adding reliability (see
         # TASK_KNOWLEDGE_BASE.md Part 5, fix #1).
 
-        # ── AT-SPI verify app appeared ────────────────────────────────────────
-        # Use the first word of app_name to search (handles "File Manager" → "nautilus")
-        search_term = APP_COMMANDS.get(app_name.lower(), app_name).split()[0]
-        confirmed = _atspi_verify_running(search_term, timeout=10.0)
+        # ── Verify app appeared (AT-SPI + process, shared with core.app_state) ──
+        from core.app_state import wait_until_running
+        search_term = (verify_name or app_name).split()[0]
+        confirmed = wait_until_running(search_term, timeout=10.0)
 
         if confirmed:
             logger.info(f"✅ '{app_name}' launched and confirmed via AT-SPI")

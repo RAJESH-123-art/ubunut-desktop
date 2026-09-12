@@ -10,12 +10,13 @@ When a task node fails:
 This enables self-healing at the workflow level.
 """
 from __future__ import annotations
-from typing import Dict, List, Any, Optional
+
+from typing import Any, Dict, List
+
 from loguru import logger
 
 from core.task_dag import TaskDAG, TaskNode
 from core.world_model import world
-
 
 # Alternative strategies for common failures
 # Key = failed intent, Value = list of alternative task configs
@@ -69,7 +70,7 @@ class Replanner:
             # dag now has new alternative nodes
     """
     
-    def __init__(self, custom_alternatives: Optional[Dict[str, List[Dict]]] = None):
+    def __init__(self, custom_alternatives: Dict[str, List[Dict]] | None = None):
         self.alternatives = ALTERNATIVE_STRATEGIES.copy()
         if custom_alternatives:
             self.alternatives.update(custom_alternatives)
@@ -90,14 +91,13 @@ class Replanner:
         logger.info(f"Replanner: injecting {len(alternatives)} alternatives for '{failed_node.id}' (intent: {failed_node.intent})")
         logger.debug(f"  World state: {len(snap.get('open_apps', []))} apps, active: {snap.get('active_window', '')}")
 
-        # Run alternatives independently and in parallel (not chained): the DAG's
-        # dependency model only advances a node when ALL its deps reach "done", so
-        # chaining them (each waiting on the previous) would stall forever the
-        # moment one alternative fails — defeating the purpose of a fallback list.
-        # Instead every alternative is submitted at once; the first one to
-        # succeed satisfies the recovery, the rest are harmless no-ops/duplicates.
+        # Alternatives form a sequential replacement chain. Running all of them
+        # concurrently can duplicate external side effects (messages, installs,
+        # browser launches). ParallelRunner promotes the original failed node to
+        # done when one alternative succeeds; only then can its dependents run.
         injected = 0
-        
+        previous_alt_id: str | None = None
+
         for i, alt in enumerate(alternatives):
             # Fill args template with failed node's args
             args = alt.get("args", {}).copy()
@@ -107,21 +107,32 @@ class Replanner:
                     template = template.replace(f"{{{k}}}", str(v))
                 # Determine the argument key based on intent
                 if alt["intent"] == "run_command":
-                    args = {"command": template}
+                    args = {"command": template, "authorized": True}
                 elif alt["intent"] == "open_browser":
                     args = {"url": template}
                 else:
                     args = {"command": template}
             
+            if alt["intent"] == "run_command":
+                args["authorized"] = True
+
             new_node = TaskNode(
                 id=f"{failed_node.id}_alt{i}",
                 intent=alt["intent"],
-                args=args,
+                args={
+                    **args,
+                    "_recovery_for": failed_node.id,
+                    "_recovery_next": f"{failed_node.id}_alt{i + 1}" if i + 1 < len(alternatives) else "",
+                },
                 deps=[],
-                max_retries=1,  # alternatives get 1 retry each
+                status="pending" if i == 0 else "deferred",
+                max_retries=0,
             )
+            if previous_alt_id:
+                new_node.error = f"Waiting for recovery alternative {previous_alt_id} to fail"
             dag.add(new_node)
-            logger.info(f"  Added alternative: {new_node.id} ({alt['intent']}) with args {args}")
+            logger.info(f"  Added alternative: {new_node.id} ({alt['intent']})")
+            previous_alt_id = new_node.id
             injected += 1
 
         return injected > 0

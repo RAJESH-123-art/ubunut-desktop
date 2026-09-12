@@ -9,7 +9,10 @@ Decision flow:
 
 Args:
     command (str): The shell command string to execute. Required.
+    stdin (str): Optional text supplied to the command's standard input.
 """
+import os
+import signal
 import subprocess
 
 from loguru import logger
@@ -18,6 +21,8 @@ from core.logger import finish, notify, start
 from core.safety_guard import UnsafeActionError, assert_safe_shell_command
 
 _TIMEOUT = 30  # seconds
+_MAX_TIMEOUT = 300
+_MAX_LOG_CHARS = 20_000
 
 
 def setup() -> dict:
@@ -29,12 +34,21 @@ def execute(args: dict, resources: dict) -> bool:
     start(task_name)
     try:
         command = str(args.get("command", "")).strip()
-        timeout = int(args.get("timeout", _TIMEOUT) or _TIMEOUT)
+        timeout = float(args.get("timeout", _TIMEOUT) or _TIMEOUT)
+        stdin_data = args.get("stdin")
+        if stdin_data is not None:
+            stdin_data = str(stdin_data)
 
         # ── Sanity check ──────────────────────────────────────────────────────
         # ── Sanity check ─────────────────────────────────────────
         if not command:
             raise ValueError("'command' is required")
+        if not 0 < timeout <= _MAX_TIMEOUT:
+            raise ValueError(f"'timeout' must be greater than 0 and at most {_MAX_TIMEOUT} seconds")
+        if args.get("authorized") is not True:
+            logger.error("Refusing raw shell execution without authorized=True")
+            finish("error", task_name)
+            return False
 
         # ── Safety check ─ refuse known-catastrophic patterns before running ──
         # This is the raw shell escape hatch, most likely to receive a
@@ -50,26 +64,51 @@ def execute(args: dict, resources: dict) -> bool:
 
         logger.info(f"Running shell command: {command!r}")
 
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdin=subprocess.PIPE if stdin_data is not None else None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            start_new_session=True,
+        )
         try:
-            result = subprocess.run(
-                command,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-            )
+            stdout, stderr = process.communicate(input=stdin_data, timeout=timeout)
         except subprocess.TimeoutExpired:
+            # Kill the whole command process group, not only `/bin/sh`.
+            # subprocess.run(..., timeout=...) can leave grandchildren alive;
+            # a live test proved a timed-out Python child continued running
+            # after this task claimed it had been killed.
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+                process.wait(timeout=1)
+            except (ProcessLookupError, subprocess.TimeoutExpired):
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                process.wait()
             logger.warning(
                 f"Command timed out after {timeout}s: {command!r}\n"
-                "The process was killed — increase timeout or split into shorter steps."
+                "The process group was killed — increase timeout or split into shorter steps."
             )
             finish("error", task_name)
             return False
 
+        result = subprocess.CompletedProcess(
+            args=command,
+            returncode=process.returncode,
+            stdout=stdout,
+            stderr=stderr,
+        )
+
         if result.stdout:
-            logger.debug(f"stdout: {result.stdout.rstrip()}")
+            output = result.stdout.rstrip()
+            logger.debug(f"stdout: {output[:_MAX_LOG_CHARS]}{'… [truncated]' if len(output) > _MAX_LOG_CHARS else ''}")
         if result.stderr:
-            logger.debug(f"stderr: {result.stderr.rstrip()}")
+            output = result.stderr.rstrip()
+            logger.debug(f"stderr: {output[:_MAX_LOG_CHARS]}{'… [truncated]' if len(output) > _MAX_LOG_CHARS else ''}")
 
         if result.returncode == 0:
             logger.info(f"✅ Command succeeded (rc=0): {command!r}")

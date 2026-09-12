@@ -26,12 +26,17 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agent import run_command
+from core.structured_automation import StructuredPlan, describe_plan
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Automation Assistant")
     _ = parser.add_argument("command", nargs="?", help="Natural language command")
     _ = parser.add_argument("--file", help="Read commands from a file (one per line)")
+    _ = parser.add_argument(
+        "-y", "--yes", action="store_true",
+        help="Approve the complete resolved plan and consequential actions",
+    )
     args = parser.parse_args()
 
     commands: list[str] = []
@@ -54,10 +59,21 @@ def main() -> None:
         parser.print_help()
         return
 
+    approve_all = bool(getattr(args, "yes", False))
+
+    def approve_plan(plan: StructuredPlan) -> bool:
+        print("\nResolved structured plan:\n")
+        print(describe_plan(plan))
+        return input("\nExecute this exact plan? Type 'yes': ").strip().lower() == "yes"
+
     overall_ok = True
     for txt in commands:
         print(f"\n=== {txt} ===")
-        ok = run_command(txt)
+        ok = run_command(
+            txt,
+            approve_all=approve_all,
+            structured_plan_approver=None if approve_all else approve_plan,
+        )
         overall_ok = overall_ok and ok
 
     sys.exit(0 if overall_ok else 1)
